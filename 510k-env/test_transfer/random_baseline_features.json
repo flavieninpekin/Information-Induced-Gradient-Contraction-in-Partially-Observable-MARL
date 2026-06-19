@@ -1,0 +1,17 @@
+{
+  "feature_expectations": [
+    0.07323404401540756,
+    0.47197943925857544,
+    0.26491907238960266,
+    0.1745152324438095,
+    0.5054689645767212
+  ],
+  "n_episodes": 10,
+  "feature_names": [
+    "Score",
+    "Progress",
+    "HandPower",
+    "IsLeader",
+    "OppHandSize"
+  ]
+}

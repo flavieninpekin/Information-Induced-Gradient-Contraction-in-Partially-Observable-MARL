@@ -1,0 +1,23 @@
+{
+  "feature_names": [
+    "Score",
+    "Progress",
+    "HandPower",
+    "IsLeader",
+    "OppHandSize"
+  ],
+  "contrastive_weights": {
+    "single": [
+      -1.3992188979211007,
+      -3.1358647839467344,
+      15.081520926646125,
+      -0.03297687846616493,
+      0.7865663937626777
+    ]
+  },
+  "tabular_weights": {},
+  "parameters": {
+    "lambda_reg": 0.01,
+    "use_tabular": false
+  }
+}

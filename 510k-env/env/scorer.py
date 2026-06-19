@@ -11,20 +11,21 @@ class Scorer:
         mode = self.game.mode
         if mode == GameMode.SINGLE:
             rewards = self._score_single()
+            for i in range(self.game.num_players):
+                rewards[i] += float(self.game.player_510k_scores[i])
         elif mode == GameMode.STATIC:
             rewards = self._score_team(teams={0: 0, 1: 1, 2: 0, 3: 1})
         elif mode == GameMode.DYNAMIC:
             red_team = self._determine_red_a_team()
             if red_team is None:
                 rewards = self._score_single()
+                for i in range(self.game.num_players):
+                    rewards[i] += float(self.game.player_510k_scores[i])
             else:
                 team_map = {i: (0 if i in red_team else 1) for i in range(self.game.num_players)}
                 rewards = self._score_team(teams=team_map)
         else:
             rewards = {i: 0.0 for i in range(self.game.num_players)}
-        # Add 510K scores on top of the base reward
-        for i in range(self.game.num_players):
-            rewards[i] += float(self.game.player_510k_scores[i])
         return rewards
 
     def _score_single(self) -> Dict[int, float]:
@@ -39,26 +40,40 @@ class Scorer:
         return rewards
 
     def _score_team(self, teams: Dict[int, int]) -> Dict[int, float]:
-        rewards = {i: 0.0 for i in range(self.game.num_players)}
-        if not self.game.finish_order:
-            return rewards
+        n = self.game.num_players
+        # 1) Individual score = 510K points
+        individual = [float(self.game.player_510k_scores[i]) for i in range(n)]
 
-        finished = set(self.game.finish_order)
-        winning_team = None
-        for team_id in (0, 1):
-            members = [i for i in range(self.game.num_players) if teams.get(i) == team_id]
-            if all(m in finished for m in members):
-                winning_team = team_id
-                break
+        # 2) Finish-position bonuses
+        if self.game.finish_order:
+            first = self.game.finish_order[0]
+            individual[first] += 15.0
+            # Last = last finisher, or any unfinished player
+            finished_set = set(self.game.finish_order)
+            unfinished = [i for i in range(n) if i not in finished_set]
+            if unfinished:
+                for i in unfinished:
+                    individual[i] -= 15.0
+            elif len(self.game.finish_order) > 1:
+                individual[self.game.finish_order[-1]] -= 15.0
 
-        if winning_team is None:
-            winning_team = teams.get(self.game.finish_order[0], 0)
+        # 3) Sum per team
+        team_total = {0: 0.0, 1: 0.0}
+        for i in range(n):
+            tid = teams.get(i)
+            if tid is not None:
+                team_total[tid] += individual[i]
 
-        for i in range(self.game.num_players):
-            if teams.get(i) == winning_team:
-                rewards[i] = 15.0
-            else:
-                rewards[i] = -15.0
+        # 4) Winning team (higher total)
+        winning_team = 0 if team_total[0] >= team_total[1] else 1
+
+        # 5) Reward = team_total × multiplier (×2 for winners, ×1 for losers)
+        mult = {winning_team: 2, 1 - winning_team: 1}
+        rewards = {}
+        for i in range(n):
+            tid = teams.get(i)
+            rewards[i] = team_total[tid] * mult[tid]
+
         return rewards
 
     def _determine_red_a_team(self) -> Optional[Set[int]]:

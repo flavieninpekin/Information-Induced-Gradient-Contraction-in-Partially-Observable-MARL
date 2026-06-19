@@ -28,13 +28,15 @@ class FiveTenKEnv(gym.Env):
         self.mode = GameMode(mode) if mode != '3p' else GameMode.SINGLE
         self.num_players = num_players
         self.include_jokers = (num_players == 3)
+        self.n_cards = 54 if self.include_jokers else 52
         self.agent_id = 0
         self.render_mode = render_mode
 
+        obs_dim = self.n_cards * 2 + 1 + 4 + 1 + 1 + 1
         self.action_space = spaces.Discrete(MAX_ACTIONS)
         self.observation_space = spaces.Box(
             low=0, high=1,
-            shape=(54 + 54 + 1 + 4 + 1 + 1 + 1,),
+            shape=(obs_dim,),
             dtype=np.float32
         )
 
@@ -43,12 +45,13 @@ class FiveTenKEnv(gym.Env):
         self.history: List[dict] = []
 
     def _get_obs(self) -> np.ndarray:
-        hand = np.zeros(54, dtype=np.float32)
+        n = self.n_cards
+        hand = np.zeros(n, dtype=np.float32)
         if self.game:
             for c in self.game.players[self.agent_id].hand:
                 hand[card_to_id(c)] = 1.0
 
-        last_play = np.zeros(54, dtype=np.float32)
+        last_play = np.zeros(n, dtype=np.float32)
         last_type = np.float32(0.0)
         if self.game and self.game.last_trick and self.game.last_trick.pattern:
             for c in self.game.last_trick.cards:
