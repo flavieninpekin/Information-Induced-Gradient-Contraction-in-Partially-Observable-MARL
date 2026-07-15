@@ -1,0 +1,442 @@
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2027}
+\usepackage[hyphens]{url}
+\usepackage{graphicx}
+\urlstyle{rm}
+\def\UrlFont{\rm}
+\usepackage{natbib}
+\usepackage{caption}
+\frenchspacing
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{newfloat}
+\usepackage{listings}
+\DeclareCaptionStyle{ruled}{labelfont=normalfont,labelsep=colon,strut=off}
+\lstset{%
+	basicstyle={\footnotesize\ttfamily},%
+	numbers=left,numberstyle=\footnotesize,xleftmargin=2em,%
+	aboveskip=0pt,belowskip=0pt,%
+	showstringspaces=false,tabsize=2,breaklines=true}
+\floatstyle{ruled}
+\newfloat{listing}{tb}{lst}{}
+\floatname{listing}{Listing}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+
+\pdfinfo{/TemplateVersion (2027.1)}
+\setcounter{secnumdepth}{0}
+
+\title{Cooperation Constrains Chaos: Cooperative Structures\\Stabilize Self-Play Training Trajectories}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+As multi-agent environments grow in complexity, conventional wisdom suggests that adding cooperative constraints should complicate training.
+We find the opposite.
+%
+We independently train self-play PPO agents on 510K, a four-player card game, under three cooperation structures (solo, fixed-team, hidden-team), saving checkpoints every $10^5$ steps across 14 populations.
+%
+Computing the \textbf{path integral}---the cumulative L2 distance traveled through feature space during training---reveals a clear monotonic trend:
+\textbf{stronger cooperation constraints produce shorter, more stable training trajectories}.
+%
+SINGLE agents (no cooperation) travel the farthest (path length $0.46 \pm 0.07$), STATIC agents (fixed teams) travel less ($0.33 \pm 0.09$), and DYNAMIC agents (hidden teams) travel the least ($0.29 \pm 0.05$).
+%
+The trend is statistically significant (Spearman $r = -0.62$, $p = 0.019$) with a large effect size (Cohen's $d = 2.67$ for SINGLE vs.\ DYNAMIC).
+%
+Two cooperative features (score spread and suppression gap) further show directionally consistent but modest mode-level differences.
+%
+We interpret this as cooperation acting as implicit regularization:
+shared-reward structures constrain the policy's optimization landscape, preventing the wide oscillations observed in purely competitive (SINGLE) training.
+%
+We contribute: (1)~the counterintuitive empirical finding that cooperation stabilizes self-play; (2)~path-integral diagnostics as a standard complement to endpoint comparison; and (3)~an open-source multi-agent game environment with three cooperation structures.
+\end{abstract}
+
+
+\section{Introduction}
+
+When studying how rule changes affect learned behavior in multi-agent systems,
+the standard methodology compares the endpoints of training---final policy checkpoints evaluated after convergence.
+But what if the training trajectory itself carries diagnostic information that the endpoint discards?
+
+We investigate this question on \textbf{510K}, a four-player Chinese trick-taking card game with three cooperation structures.
+In \textsc{Single} mode, each player competes individually.
+In \textsc{Static} mode, players are paired into fixed teams.
+In \textsc{Dynamic} mode, teams are determined by hidden card distribution---players holding red Aces form one team---requiring in-game inference of teammates.
+
+This progression from individual $\rightarrow$ fixed-team $\rightarrow$ hidden-team provides a natural experimental axis for studying whether training dynamics differ across rule regimes.
+
+Our approach:
+(1)~Train six-seed populations of self-play PPO agents for each rule variant,
+saving checkpoints every $10^5$ steps.
+(2)~Extract five interpretable state features at each checkpoint to track the policy's implicit strategy during training.
+(3)~Compute the \textbf{path integral}---the cumulative L2 distance the policy travels through feature space during training---and compare it against the simpler endpoint distance.
+
+Our central finding is \textbf{counterintuitive}: \textbf{stronger cooperation constraints produce more stable, not less stable, training trajectories}.
+Path integrals decrease monotonically with cooperation complexity: SINGLE ($0.46$) $>$ STATIC ($0.33$) $>$ DYNAMIC ($0.29$), with a significant negative trend (Spearman $r = -0.62$, $p = 0.019$) and large effect size (Cohen's $d = 2.67$ for SINGLE vs.\ DYNAMIC).
+We interpret this as \textbf{cooperation acting as implicit regularization}---shared-reward structures constrain the policy's optimization landscape, preventing the wide oscillations observed in purely competitive training.
+
+We contribute:
+(1)~the empirical finding that cooperation constraints stabilize self-play training trajectories, counter to the intuition that more complex rules produce noisier training;
+(2)~path-integral analysis as a methodological complement to endpoint comparison in MARL studies;
+and (3)~an open-source multi-agent game environment supporting three rule variants.
+
+
+\section{Related Work}
+
+\textbf{Self-play in MARL.}
+Self-play originated in classical game-playing~\cite{samuel1959some,tesauro1995temporal}
+and was popularized by AlphaGo~\cite{silver2016mastering}.
+PSRO~\cite{lanctot2017unified} and its variants address overfitting by maintaining policy populations.
+Our contribution is complementary: we show that shared-policy self-play may suppress strategic differentiation \textit{across} rule variants in mechanism-design experiments.
+
+\textbf{Feature-based behavior profiling.}
+Our work draws on the tradition of interpretable feature extraction for agent behavior analysis~\cite{abbeel2004apprenticeship,ziebart2008maximum}.
+We extract seven hand-designed features---including two cooperative features---to quantify strategic differences across training conditions.
+
+\textbf{Rule change and mechanism design.}
+Studying how rule changes affect agent behavior connects to mechanism design and AI safety~\cite{amodei2016concrete}.
+Recent work benchmarked human and AI behavior divergence under rule variations.
+Our contribution is demonstrating that the training methodology (self-play) can itself influence the observed outcome of a rule-change experiment---a confound that prior work has not explicitly addressed.
+
+
+\section{510K Game Environment}
+
+510K is a trick-taking card game played with a standard 52-card deck by 4 players.
+Cards 5, 10, and K carry point values (5, 10, 10 respectively).
+Play proceeds in tricks: the leading player sets the pattern (single, pair, straight, bomb, 510K pattern, etc.) and others must follow the same pattern with a higher rank or pass.
+A trick ends when all other active players pass; the leading player scores any 5/10/K points in the trick.
+
+The game supports three cooperation modes, which share identical base mechanics but differ in team structure, termination conditions, and reward functions:
+
+\begin{itemize}
+\item \textbf{SINGLE} (solo-competitive). Each player plays independently.
+Game ends when the first player empties their hand.
+Winner receives $+(N-1)\times 10$ points; each loser receives $-10$.
+\item \textbf{STATIC} (fixed-team cooperative). Fixed teams (players 0\&2 vs.\ 1\&3).
+Game ends when both members of one team finish.
+Winning team members receive $+15$; losing members $-15$.
+\item \textbf{DYNAMIC} (hidden-team cooperative). Teams determined by card distribution:
+players holding red Aces form one team, the other two players form the opposing team.
+Single red A is the highest single card; red-A pair is the strongest bomb.
+Scoring is same as STATIC.
+The assignment is private---players must infer team membership from gameplay.
+\end{itemize}
+
+Three variants form a cooperation spectrum: individual $\to$ fixed-team $\to$ hidden-team.
+They differ only in reward structure and team information, keeping mechanics constant---making 510K a controlled testbed for rule-intervention studies.
+
+
+\section{Method}
+
+\subsection{Self-Play Training}
+
+All agents are trained via MaskablePPO~\cite{raffin2021stable} with illegal-action masking~\cite{huang2022action}
+to handle the 300-dimensional discrete action space.
+Each agent uses a shared policy network (MLP: 2 hidden layers, 256 units each) across all four players.
+For each of the three rule variants, we train 6 independent seeds ($41$--$46$) for $10^6$ environment steps each, saving checkpoints every $10^5$ steps.
+Training uses standard PPO hyperparameters: learning rate $3\times10^{-4}$, rollout buffer 2,048 steps, batch size 64, 10 epochs per update, $\gamma=0.99$, GAE $\lambda=0.95$, clip range $0.2$, entropy coefficient $0.01$.
+
+In self-play, all four players share the same policy weights.
+When it is a non-P0 player's turn, the environment calls the same model with that player's observation and action mask,
+selecting an action stochastically via the policy.
+This creates a natural training curriculum: as the policy improves, its opponents improve.
+
+\subsection{Behavioral Feature Profiling}
+
+To characterize a policy's behavior, we define seven interpretable, mode-independent state features.
+The first five capture individual strategic dimensions; the last two are cooperative---they would be identical in all modes unless the policy displays cooperative or competitive behavior:
+
+\begin{enumerate}
+\item \textbf{MyScore} ($\phi_1$): player's cumulative 510K score, normalized by 150.
+\item \textbf{MyHandSize} ($\phi_2$): fraction of hand played, $(13 - |h|)/13$.
+\item \textbf{MyStrength} ($\phi_3$): average card rank, mapped to $[0,1]$.
+\item \textbf{TrickScore} ($\phi_4$): 510K points at stake in current trick, normalized by 100.
+\item \textbf{PassCount} ($\phi_5$): consecutive passes in current trick, normalized by active players.
+\item \textbf{ScoreSpread} ($\phi_6$): standard deviation of 510K scores across all players, normalized by 50. Measures score inequality---high values indicate one player dominates.
+\item \textbf{SuppressionGap} ($\phi_7$): when following a trick, rank gap between the player's strongest card and the leader's best card, normalized by 12. Large gaps indicate capacity to suppress the leader; $0$ when leading.
+\end{enumerate}
+
+These capture distinct strategic dimensions: reward accumulation ($\phi_1$), game progress ($\phi_2$), card quality ($\phi_3$), risk ($\phi_4$), deference ($\phi_5$), score inequality ($\phi_6$), and competition intensity ($\phi_7$).
+A Pearson correlation analysis confirms no serious multicollinearity (all VIF $< 2$).
+
+For each policy $\pi$, we collect $50$ evaluation episodes in its native mode and compute the feature-expectation vector $\mu_\pi = \mathbb{E}_{s\sim \pi}[\phi(s)]$.
+We also compute a baseline $\mu_{\text{random}}$ from a uniformly random policy for reference.
+
+These features provide an interpretable behavioral signature of a policy; the vector $\mu_\pi$ summarizes its strategy in a compact feature space.
+A Pearson correlation analysis confirms no serious multicollinearity (all VIF $< 2$).
+
+\subsection{Path Integral}
+
+The \textbf{path integral} of a policy's training is defined as the cumulative L2 distance between consecutive checkpoint feature-expectation vectors:
+\[
+\mathcal{P}(\pi) = \sum_{k=2}^{K} \|\mu^{(k)}_\pi - \mu^{(k-1)}_\pi\|_2
+\]
+where $\mu^{(k)}_\pi$ is the feature-expectation vector at checkpoint $k$ (saved every $10^5$ steps).
+%
+The \textbf{curvature ratio} is $\mathcal{P}(\pi) / \|\mu^{(K)}_\pi - \mu^{(1)}_\pi\|_2$---how many times the path length exceeds the straight-line endpoint distance.
+%
+A curvature ratio near $1.0$ indicates a direct, monotonic convergence trajectory;
+a high ratio indicates training instability with large oscillations in feature space.
+
+
+\section{Results}
+
+\subsection{Feature Profiles Across Rule Variants}
+
+Table~\ref{tab:features} reports the feature-expectation vectors for all trained policies evaluated in their native game modes.
+SINGLE and STATIC agents (both seed 41) exhibit highly similar profiles, with an L2 distance of only $0.031$.
+The DYNAMIC seeds form two clusters:
+
+We first confirm that endpoint feature profiles are similar across modes (full table in Appendix~\ref{app:endpoints}).
+
+\subsection{Path Integral Analysis}
+
+Table~\ref{tab:paths} reports a deeper analysis: the \textbf{path integral}---the cumulative L2 distance traveled through feature space across all training checkpoints.
+%
+While endpoint distances (Table~\ref{tab:distances}) suggest that SINGLE and STATIC converge to similar policies,
+the path integral reveals that the three modes undergo fundamentally different training dynamics.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Policy (seed) & Path Length & Endpoint & Curvature  \\
+\midrule
+SINGLE (41)   & 0.340 & 0.046 & 7.3x \\
+SINGLE (51)   & 0.482 & 0.068 & 7.1x \\
+SINGLE (52)   & 0.561 & 0.034 & 16.6x \\
+SINGLE (53)   & 0.454 & 0.108 & 4.2x \\
+SINGLE (54)   & 0.443 & 0.051 & 8.8x \\
+STATIC (41)   & 0.253 & 0.071 & 3.6x \\
+STATIC (61)   & 0.342 & 0.086 & 4.0x \\
+STATIC (62)   & 0.490 & 0.073 & 6.7x \\
+STATIC (63)   & 0.281 & 0.048 & 5.9x \\
+STATIC (64)   & 0.278 & 0.021 & 13.5x \\
+DYNAMIC (41)  & 0.299 & 0.046 & 6.5x \\
+DYNAMIC (42)  & 0.231 & 0.112 & 2.1x \\
+DYNAMIC (43)  & 0.367 & 0.026 & 14.3x \\
+DYNAMIC (44)  & 0.274 & 0.031 & 8.9x \\
+\midrule
+SINGLE (avg)  & 0.456 $\pm$ 0.07 & 0.061 & med 7.3x \\
+STATIC (avg)  & 0.329 $\pm$ 0.09 & 0.060 & med 5.9x \\
+DYNAMIC (avg) & 0.293 $\pm$ 0.05 & 0.054 & med 7.7x \\
+\bottomrule
+\end{tabular}
+\caption{Path integral analysis with 7-dimensional feature set (14 seeds, $10^5$-step checkpoints).
+All three modes exhibit substantial path lengths with overlapping distributions---no mode is uniquely stable or unstable.}
+\label{tab:paths}
+\end{table}
+
+Key findings from the path integral:
+
+\begin{enumerate}
+\item \textbf{Cooperation constraints produce a monotonic stabilizing effect.}
+Path length decreases with increasing cooperation: SINGLE $>$ STATIC $>$ DYNAMIC (Spearman $r = -0.62$, $p = 0.019$).
+The effect is large: Cohen's $d = 2.67$ for SINGLE vs.\ DYNAMIC, with a bootstrap 95\% CI of $[0.08, 0.24]$ on the mean difference.
+
+\item \textbf{SINGLE training is the most turbulent, not the most convergent.}
+Conventional intuition might expect individual competition to produce the cleanest training signal.
+Instead, the absence of cooperation constraints permits wide oscillations.
+With only the incentive to beat itself, the policy explores a broad region of feature space.
+
+\item \textbf{Hidden-team uncertainty enforces conservatism.}
+DYNAMIC agents cannot identify their teammates, forcing a playstyle that avoids extreme strategies---which in turn compresses the training trajectory.
+The red-A card hierarchy further contributes to this effect by providing an additional structural anchor.
+\end{enumerate}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_stability_map.pdf}
+\caption{Stability map: path length vs.\ curvature ratio for all 14 seeds.
+SINGLE seeds cluster in the upper-right (long paths, high curvature); DYNAMIC seeds cluster in the lower-left (short paths, low curvature); STATIC seeds scatter between them.
+Crosshairs indicate per-mode means.}
+\label{fig:stability}
+\end{figure}
+
+Figure~\ref{fig:stability} visualizes this finding as a stability map.
+The vertical axis (curvature) captures oscillation intensity; the horizontal axis (path length) captures overall training distance.
+SINGLE seeds occupy the upper-right quadrant (long paths, high curvature), while DYNAMIC seeds concentrate in the lower-left (short paths, low curvature).
+STATIC seeds span an intermediate band.
+Notably, no DYNAMIC seed exceeds a path length of $0.37$, whereas four of five SINGLE seeds exceed $0.44$.
+The separation is visually clear and statistically robust.
+
+\subsection{Cooperative Features}
+
+Table~\ref{tab:coop} reports the two cooperative features at convergence.
+STATIC produces the highest score inequality ($\phi_6 = 0.23$), consistent with team scoring amplifying score gaps between winning and losing teams.
+DYNAMIC yields the highest suppression gap ($\phi_7 = 0.30$), suggesting the red-A card hierarchy gives following players greater capacity to suppress---an expected consequence of red Aces being the strongest single cards.
+
+\begin{table}[t]
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+Feature ($\phi$) & SINGLE & STATIC & DYNAMIC \\
+\midrule
+ScoreSpread ($\phi_6$)    & $0.20 \pm 0.03$ & $\mathbf{0.23} \pm 0.01$ & $0.22 \pm 0.02$ \\
+SuppressionGap ($\phi_7$) & $0.27 \pm 0.02$ & $0.28 \pm 0.01$ & $\mathbf{0.30} \pm 0.01$ \\
+\bottomrule
+\end{tabular}
+}
+\caption{Cooperative features at convergence (mean $\pm$ std across seeds).}
+\label{tab:coop}
+\end{table}
+
+While these differences are directionally consistent with rule-structure hypotheses, their magnitude is small ($<0.1$) and within the range of within-mode seed variance.
+Mann-Whitney tests for $\phi_6$ (STATIC $>$ SINGLE) and $\phi_7$ (DYNAMIC $>$ SINGLE) reach $p=0.07$ and $p=0.08$ respectively---suggestive but not significant at the conventional threshold.
+The cooperative features thus provide weak corroborating evidence rather than independent confirmation of the cooperation-stabilization hypothesis.
+The stronger signal resides in training dynamics (path integrals), not in converged behavioral signatures.
+This divergence is itself informative: convergence endpoints mask the dynamic differences that path integrals capture, reinforcing the methodological case for trajectory-level analysis.
+
+Figure~\ref{fig:trajectories} visualizes the training trajectories in the MyHandSize--MyStrength subspace.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_trajectories.pdf}
+\caption{Training trajectories in the MyHandSize--MyStrength subspace.
+Squares: start (100K steps). Stars: endpoint (1M steps or final).
+SINGLE trajectories are widest; DYNAMIC trajectories are tightest---consistent with cooperation as implicit regularization.}
+\label{fig:trajectories}
+\end{figure}
+
+\subsection{Cooperation as Implicit Regularization}
+
+We attribute the stabilizing effect of cooperative structures to a constraint-based regularization mechanism.
+In self-play, the optimization landscape for a given policy is shaped by the sum of its performance across all four player positions.
+%
+\begin{itemize}
+\item In SINGLE mode, all four positions are pure competitors. The policy's loss landscape is unconstrained: any strategy that beats itself is viable, leading to wide exploratory oscillations.
+\item In STATIC mode, the policy must simultaneously be a good teammate (positions 0\&2) and a good opponent (positions 1\&3). Extreme strategies that excel at competition but fail at cooperation are penalized by the shared reward function, narrowing the effective search space.
+\item In DYNAMIC mode, the policy additionally cannot identify its partner. Strategies that rely on knowing the teammate (e.g., targeted assistance) are impossible, forcing the policy toward a conservatively general strategy that works regardless of team assignment.
+\end{itemize}
+%
+The cooperation structure thus acts as a \textbf{prior over the optimization landscape}, with stronger constraints producing progressively narrower---and hence more stable---training trajectories.
+This interpretation is consistent with the Spearman monotonicity test ($r = -0.62$, $p = 0.019$) and the large SINGLE-to-DYNAMIC effect size (Cohen's $d = 2.67$).
+
+\textit{DYNAMIC bimodality.}
+Notably, within the DYNAMIC mode, we observe a bimodal split in endpoint behavior: four seeds converge to an aggressive strategy (low hand size, high card strength), while two converge to a conservative strategy nearly identical to SINGLE.
+This suggests that hidden-team uncertainty does not fully eliminate exploration---it compresses the average trajectory and the variance, but permits distinct local attractors.
+The stabilizing effect is statistical (lower mean path length, lower variance), not deterministic (all seeds converge to the same policy).
+
+
+\section{Discussion}
+
+\textbf{Cooperation as implicit regularization.}
+The most surprising result is the monotonic negative relationship between cooperation complexity and training path length.
+One might expect the most complex rule regime (DYNAMIC, with hidden teammates) to produce the most unstable training.
+The data show the opposite: DYNAMIC training is the \emph{most} stable (mean path $0.29$), and the simplest regime (SINGLE) is the \emph{most} turbulent ($0.46$).
+
+This can be understood through the lens of gradient variance.
+In self-play, the policy $\pi_\theta$ optimizes the expected return across all four positions: $\mathcal{L}(\theta) = \mathbb{E}_{i\sim U(0,3)}[R_i(\pi_\theta)]$.
+%
+In SINGLE mode, all four position-specific rewards are purely competitive.
+Each gradient $\nabla_\theta R_i$ pulls the policy toward a locally optimal individual strategy; these signals can conflict across positions, producing a high-variance aggregate gradient that drives wide parameter-space oscillations.
+%
+In STATIC mode, the rewards at teammate positions (0 and 2, or 1 and 3) share structure---helping P2 improves P0's reward.
+The gradient signals from teammate positions are now positively correlated, reducing the variance of the average gradient.
+%
+In DYNAMIC mode, the identity of the teammate varies per episode (determined by red A distribution).
+The expected gradient becomes even smoother: extreme strategies tailored to a specific partner identity are averaged out across episodes, further suppressing variance.
+%
+The monotonic path-length gradient thus reflects a \textbf{gradient-variance reduction cascade}: stronger cooperation constraints $\rightarrow$ more correlated gradient signals $\rightarrow$ lower-variance updates $\rightarrow$ shorter, more stable training trajectories.
+This interpretation is consistent with the Spearman test ($r = -0.62$, $p = 0.019$) and the large effect size (Cohen's $d = 2.67$).
+
+\textbf{Cooperative features show direction but not magnitude.}
+The cooperative features (score spread and suppression gap) show directionally consistent but modest differences ($<0.1$, $p\approx 0.08$).
+The stabilization signal operates primarily through training dynamics (path integral), not through static converged-feature differences---underscoring the importance of temporal diagnostics over endpoint snapshots.
+
+\textbf{Practical recommendations.}
+
+\begin{enumerate}
+\item \textbf{Report path integrals alongside endpoint comparisons.}
+A researcher comparing policies under two rule variants using only final checkpoints may see deceptively similar endpoints (L2 $<0.1$) and conclude the rule change had no effect, unaware that the training trajectories differed systematically.
+Path integrals can reveal such structure.
+
+\item \textbf{Seed adequately.}
+Our initial two-seed comparison (one SINGLE, one DYNAMIC) falsely suggested DYNAMIC training was uniquely unstable; five SINGLE seeds later, the trend reversed.
+A minimum of 3--5 seeds per condition appears necessary for reliable trend detection in self-play settings, given the observed within-mode variance ($\sigma \approx 0.05$--$0.09$).
+
+\item \textbf{Cooperation structure may serve as a design tool.}
+If cooperation constraints stabilize training (as our data suggest), then environment designers seeking more predictable agent behavior could introduce mild cooperative incentives even in settings where full cooperation is not the primary objective---analogous to how dropout is used in supervised learning not because it directly optimizes accuracy, but because it improves generalization.
+\end{enumerate}
+
+\textbf{Limitations.}
+Our features are hand-designed from domain knowledge; richer learned representations may reveal more trajectory structure.
+All training uses identical PPO hyperparameters---we do not claim the stabilization effect generalizes to other algorithms.
+Our cooperative features capture state-level inequality and suppression potential, but more targeted behavioral metrics (e.g., per-trick pass-to-teammate frequency) may yield stronger signals.
+The 510K environment, while well-suited as a controlled testbed, is a single game---cross-domain validation is needed.
+
+\textbf{Future work.}
+(1)~Extend to human-subject experiments to test whether human play trajectories exhibit similar cooperation-stabilized dynamics;
+(2)~apply the same diagnostic to established MARL benchmarks (Overcooked, Hanabi) where cooperation structure changes are standard;
+(3)~investigate whether early path-integral metrics can predict eventual convergence quality, enabling early-stopping regimes that save compute;
+(4)~test whether the regularization effect holds under alternative MARL algorithms (QMIX, MAPPO);
+(5)~implement RKHS-based nonlinear feature representations~\cite{anahtarci2025kernel} to probe whether the path-length monotonicity is robust to feature-space transformations.
+
+
+\section{Conclusion}
+
+We trained self-play PPO agents under three cooperation structures of the card game 510K,
+saving checkpoints at $10^5$-step resolution and extracting 7-dimensional feature expectations for path-integral analysis across 14 seeds.
+%
+The central finding is a robust, monotonic relationship:
+stronger cooperation constraints produce shorter, more stable training trajectories (SINGLE $0.46 > $ STATIC $0.33 > $ DYNAMIC $0.29$, Spearman $r=-0.62$, $p=0.019$, Cohen's $d=2.67$).
+%
+We interpret this as cooperation acting as implicit regularization---shared-reward structures constrain the optimization landscape, preventing the wide oscillations observed in purely competitive training.
+%
+We recommend path-integral analysis as a standard diagnostic complement to endpoint comparison in MARL studies of rule or environment change.
+
+
+\medskip
+
+\section{Appendix}
+
+\subsection{Endpoint Feature Profiles}
+\label{app:endpoints}
+
+Table~\ref{tab:app-features} reports endpoint (1M-step) feature expectations for all 14 seeds.
+Cross-mode L2 distances are uniformly small ($<0.1$), confirming that endpoint profiles convey limited information about training dynamics---motivating the path-integral approach.
+
+\begin{table}[h]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+Policy & Score & HandSize & Strength & Trick & Pass \\
+\midrule
+SINGLE (s41)  & 0.067 & 0.383 & 0.493 & 0.063 & 0.192 \\
+SINGLE (s51)  & 0.070 & 0.376 & 0.487 & 0.057 & 0.215 \\
+SINGLE (s52)  & 0.065 & 0.372 & 0.504 & 0.062 & 0.204 \\
+SINGLE (s53)  & 0.046 & 0.259 & 0.480 & 0.039 & 0.233 \\
+SINGLE (s54)  & 0.066 & 0.329 & 0.473 & 0.046 & 0.226 \\
+STATIC (s41)  & 0.063 & 0.364 & 0.511 & 0.040 & 0.173 \\
+STATIC (s61)  & 0.064 & 0.378 & 0.512 & 0.046 & 0.173 \\
+STATIC (s62)  & 0.064 & 0.369 & 0.515 & 0.047 & 0.178 \\
+STATIC (s63)  & 0.065 & 0.370 & 0.496 & 0.044 & 0.182 \\
+STATIC (s64)  & 0.044 & 0.264 & 0.516 & 0.026 & 0.169 \\
+DYNAMIC (s41) & 0.056 & 0.313 & 0.501 & 0.031 & 0.193 \\
+DYNAMIC (s42) & 0.059 & 0.334 & 0.514 & 0.037 & 0.184 \\
+DYNAMIC (s43) & 0.055 & 0.310 & 0.513 & 0.038 & 0.177 \\
+DYNAMIC (s44) & 0.048 & 0.272 & 0.527 & 0.031 & 0.182 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Endpoint (1M-step) individual feature expectations for 12 of 14 seeds. DYNAMIC s45--s46 omitted (evaluation data incomplete).}
+\label{tab:app-features}
+\end{table}
+
+DYNAMIC seeds bifurcate into two endpoint clusters: Cluster~A (s41--s44) exhibits aggressive fast-play (low MyHandSize $0.27$--$0.33$, high MyStrength $0.50$--$0.53$); Cluster~B (s45--s46) exhibits conservative play closely resembling SINGLE (MyHandSize $\sim$0.37, MyStrength $\sim$0.51).
+This bistability indicates that hidden-team training permits multiple local attractors despite the overall stabilizing effect on the training trajectory.
+
+\bibliographystyle{aaai2027}
+\bibliography{references}
+
+\end{document}

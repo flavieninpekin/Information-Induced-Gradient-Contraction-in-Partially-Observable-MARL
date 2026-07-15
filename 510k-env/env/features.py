@@ -1,28 +1,21 @@
-"""Feature extractor for IRL — decision-relevant features for 5-10-K.
+"""Feature extractor for IRL — 7 features (5 individual + 2 cooperative/interaction).
 
-All features are:
-  1) Mode-independent (computed identically in SINGLE/STATIC/DYNAMIC)
-  2) Decision-relevant (inform the question "what should I play now?")
-  3) Non-redundant (each captures a distinct strategic dimension)
-
-Feature set:
-  φ₁ MyScore      — my accumulated 510K score / 150        [How am I doing?]
-  φ₂ MyHandSize   — my cards remaining / 13 (inverted)      [How close to done?]
-  φ₃ MyStrength   — average rank of my cards [3→0, 2→1]    [How strong is my hand?]
-  φ₄ TrickScore   — 510K points at stake in this trick /100 [What's the risk/reward?]
+  φ₁-φ₅: Individual features (unchanged)
+  φ₆: ScoreSpread    — score inequality across players  [cooperative potential]
+  φ₇: SuppressionGap — rank margin when following leader [competition intensity]
 """
 import numpy as np
 from .card import Rank
 from .game import Game
 
 
-FEATURE_NAMES = ['MyScore', 'MyHandSize', 'MyStrength', 'TrickScore']
+FEATURE_NAMES = ['MyScore', 'MyHandSize', 'MyStrength',
+                 'TrickScore', 'PassCount', 'ScoreSpread', 'SuppressionGap']
 FEATURE_DIM = len(FEATURE_NAMES)
-FEATURE_BINS = 4
+FEATURE_BINS = 3
 
 
 def _avg_rank_normalized(hand) -> float:
-    """Average rank (3→0.0, 2→1.0). Jokers treated as 2."""
     if not hand:
         return 0.0
     total = 0
@@ -37,21 +30,40 @@ def _avg_rank_normalized(hand) -> float:
 
 def extract_features(game: Game, player_id: int) -> np.ndarray:
     hand = game.players[player_id].hand
-    max_hand = 18 if game.num_players == 3 else 13
+    n = game.num_players
+    max_hand = 13 if n == 4 else 18
 
     f = np.zeros(FEATURE_DIM, dtype=np.float32)
 
-    # φ₁: MyScore — how many 510K points I've accumulated
+    # φ₁: MyScore
     f[0] = min(float(game.player_510k_scores[player_id]) / 150.0, 1.0)
 
-    # φ₂: MyHandSize — inverted: 0 = 13 cards, 1 = empty
+    # φ₂: MyHandSize
     f[1] = (max_hand - len(hand)) / max_hand
 
-    # φ₃: MyStrength — average card rank
+    # φ₃: MyStrength
     f[2] = _avg_rank_normalized(hand)
 
-    # φ₄: TrickScore — 510K points at stake right now
+    # φ₄: TrickScore
     f[3] = min(game.trick_pending_score / 100.0, 1.0)
+
+    # φ₅: PassCount
+    active = game._active_player_count()
+    f[4] = game.pass_count / max(active - 1, 1)
+
+    # φ₆: ScoreSpread — standard deviation of 510K scores / 50
+    scores = [game.player_510k_scores[i] for i in range(n)]
+    f[5] = min(np.std(scores) / 50.0, 1.0)
+
+    # φ₇: SuppressionGap — when NOT leading, rank gap between my best card
+    # and the leader's best card (normalized). 0 = same rank, 1 = max gap.
+    if game.last_trick is not None and game.last_trick.pattern is not None \
+            and game.last_trick.player != player_id:
+        leader_best = max(c.rank.value for c in game.last_trick.cards)
+        my_best = max((c.rank.value for c in hand), default=leader_best)
+        gap = max(my_best - leader_best, 0)
+        f[6] = gap / 12.0  # max rank gap is 12 (3 to 15)
+    # else: leader or no trick → gap = 0
 
     return f
 

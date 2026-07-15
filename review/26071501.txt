@@ -1,0 +1,67 @@
+是写作方式颠三倒四，不是内容不够好。
+你的核心发现是扎实的：单调趋势、统计显著、效应量大、解释合理。但这份草稿在结构编排、信息重复、前后一致性上问题很严重，会让审稿人读得很累，甚至误解你的贡献。下面我按严重程度列出来。
+一、最严重：Results 和 Discussion 大面积重复
+这是最大的结构硬伤。
+Results 里已经有一节叫「Cooperation as Implicit Regularization」，把梯度方差、优化景观约束、Spearman r=−0.62  全讲了一遍。
+Discussion 第一节又从头讲一遍，连统计数字都重复出现。
+审稿人读到 Discussion 时会产生强烈的「似曾相识」感，觉得你在凑字数。正确的做法是：
+Results 只呈现现象和数据：路径长度单调递减、合作特征不显著、DYNAMIC 双峰。
+Discussion 只做解释和升华：梯度方差降低的因果机制、与 dropout 的类比、对 MARL 方法论的启示。
+修改：把 Results 里的「Cooperation as Implicit Regularization」小节整段删掉，只保留 DYNAMIC bimodality 的观察。把所有机制解释集中到 Discussion。
+二、致命矛盾：Table caption 与正文结论相反
+Table tab:paths 的 caption 写的是：
+"All three modes exhibit substantial path lengths with overlapping distributions---no mode is uniquely stable or unstable."
+但正文写的是：
+"Cooperation constraints produce a monotonic stabilizing effect... statistically significant... large effect size."
+这是直接自相矛盾。审稿人看到 caption 会立刻质疑你的整个结论。这个 caption 看起来是从早期探索性分析的草稿里遗留下来的，必须改掉。
+修改：caption 应改为强调单调趋势和模式分离，例如：
+"Path length decreases monotonically with cooperation complexity. SINGLE seeds cluster at higher path lengths (mean 0.46) while DYNAMIC seeds concentrate at lower values (mean 0.29)."
+三、前后不一致：特征数量对不上
+Abstract："extracting 7-dimensional feature expectations"
+Introduction："five interpretable state features"
+Method：实际定义了 7 个特征（ϕ 
+1
+​
+   到 ϕ 
+7
+​
+  ），但文字说 "The first five capture individual strategic dimensions; the last two are cooperative"
+这里 Introduction 的 "five" 是笔误，应该是 "seven"。这种低级不一致会让审稿人怀疑实验细节的可信度。
+四、断链的交叉引用
+Results 开头引用：
+Table~\ref{tab:features} → 不存在
+Table~\ref{tab:distances} → 不存在
+实际存在的表是 tab:paths、tab:coop、tab:app-features
+这会导致 LaTeX 编译出 ??，审稿人看到满篇问号会非常恼火。
+五、Method 里的重复段落
+Behavioral Feature Profiling 最后两段都写了：
+"A Pearson correlation analysis confirms no serious multicollinearity (all VIF <2 )."
+整段重复，像是复制粘贴忘了删。
+六、Related Work 太薄（这是内容问题，但可快速补救）
+目前只有 3 个小段，覆盖不到 10 篇文献。AAAI 审稿人期望看到：
+MARL 中 self-play 稳定性的经典问题（PSRO、 League Training 等）
+轨迹分析 / 训练动态诊断的相关工作（不只是 endpoint comparison）
+合作/竞争混合环境的设计文献
+隐式正则化 / 梯度方差在 RL 中的讨论
+你不需要做新实验，只需要读 10-15 篇相关论文，写两段有实质对比的 Related Work。
+七、一些细节问题
+表格
+问题	位置	建议
+DYNAMIC seeds 数据不完整	Method 说 6 seeds，Appendix 说 s45-s46 omitted	在 Method 里直接说明 DYNAMIC 用了 4 个完整 seeds，诚实且避免被质疑
+"14 populations"	Abstract	改为 "14 independent training runs" 或 "14 seeds"，"populations" 在 self-play 语境下容易歧义
+Conclusion 与 Abstract 高度重复	Conclusion	压缩为 2-3 句，把空间留给 Limitations 的重新包装
+Limitations 像「认罪书」	Limitations	改为「研究边界」口吻，见上一轮我的建议
+两周修改优先级（按投入产出比排序）
+表格
+优先级	任务	预估时间
+P0	删掉 Results 里的「Cooperation as Implicit Regularization」，合并进 Discussion	2 小时
+P0	修正所有 Table/Figure 引用断链和 caption 矛盾	1 小时
+P0	统一「7 features」的表述	10 分钟
+P1	重写 Discussion：先讲梯度方差机制，再讲方法论启示，最后讲设计工具类比	1 天
+P1	扩充 Related Work 到 5-6 小段，覆盖 MARL、trajectory analysis、regularization	2 天
+P2	重画/确认 Figure（stability map、trajectories）存在且与正文一致	1 天
+P2	润色 Limitations 和 Future Work 的「边界感」	半天
+P3	全文语言润色（找导师/同学过一遍）	1-2 天
+总结
+你的内容骨架是够的：有反直觉发现、有统计检验、有机制解释、有方法论启示。但这份草稿像是把几个不同版本的段落拼在了一起，没有做一次「从头到尾只讲一遍」的整合。
+这不是重写，这是外科手术式修剪：删掉重复的、修正矛盾的、补全断链的、扩充薄弱的。两周时间，如果每天能投入 4-6 小时，完全可以推到可投水平。

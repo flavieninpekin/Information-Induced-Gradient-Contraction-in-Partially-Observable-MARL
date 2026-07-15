@@ -1,0 +1,12 @@
+Training 4 SINGLE seeds ([51, 52, 53, 54]) in parallel...
+Each seed: 1000000 steps, checkpoints every 100000
+[seed=54] Done in 237.8 min -> models_selfplay/510k_single_seed54_final.zip
+[seed=51] Done in 240.4 min -> models_selfplay/510k_single_seed51_final.zip
+[seed=53] Done in 240.8 min -> models_selfplay/510k_single_seed53_final.zip
+[seed=52] Done in 242.5 min -> models_selfplay/510k_single_seed52_final.zip
+
+All 4 seeds done in 242.6 min
+  seed=51: 240.4 min
+  seed=52: 242.5 min
+  seed=53: 240.8 min
+  seed=54: 237.8 min

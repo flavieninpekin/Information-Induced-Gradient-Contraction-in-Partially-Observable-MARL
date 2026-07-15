@@ -3,13 +3,15 @@
     0.09526067972183228,
     0.44322189688682556,
     0.38230785727500916,
-    0.05148977413773537
+    0.05148977413773537,
+    0.18626275658607483
   ],
   "n_episodes": 500,
   "feature_names": [
     "MyScore",
     "MyHandSize",
     "MyStrength",
-    "TrickScore"
+    "TrickScore",
+    "PassCount"
   ]
 }

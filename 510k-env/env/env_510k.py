@@ -9,6 +9,7 @@ from .card import Card, Rank, Suit, card_to_id
 from .patterns import Pattern, PatternType, detect_pattern, get_valid_plays, can_beat
 from .game import Game, GameMode
 from .scorer import Scorer
+from .obs_utils import obs_for_player, action_mask_for_player
 
 
 MAX_ACTIONS = 300
@@ -42,7 +43,12 @@ class FiveTenKEnv(gym.Env):
 
         self.game: Optional[Game] = None
         self._bot_fn = self._random_bot
+        self._model_bot = None  # Optional[MaskablePPO] for self-play
         self.history: List[dict] = []
+
+    def set_policy_bot(self, model):
+        """Enable self-play: P1-P3 use the same policy as P0."""
+        self._model_bot = model
 
     def _get_obs(self) -> np.ndarray:
         n = self.n_cards
@@ -144,9 +150,21 @@ class FiveTenKEnv(gym.Env):
         actions = self.game.get_valid_actions(pid)
         if not actions:
             self.game.pass_turn(pid)
+            return
+        if self._model_bot is not None and pid != self.agent_id:
+            chosen = self._policy_bot_act(pid, actions)
         else:
             chosen = self._bot_fn(pid, actions)
-            self.game.play_cards(pid, chosen.cards)
+        self.game.play_cards(pid, chosen.cards)
+
+    def _policy_bot_act(self, player_idx: int, actions: List[Pattern]) -> Pattern:
+        obs = obs_for_player(self.game, player_idx)
+        mask = action_mask_for_player(self.game, player_idx)
+        action, _ = self._model_bot.predict(obs, action_masks=mask, deterministic=False)
+        idx = int(action) - 1
+        if 0 <= idx < len(actions):
+            return actions[idx]
+        return random.choice(actions)
 
     def _random_bot(self, player_idx: int, actions: List[Pattern]) -> Pattern:
         return random.choice(actions)
