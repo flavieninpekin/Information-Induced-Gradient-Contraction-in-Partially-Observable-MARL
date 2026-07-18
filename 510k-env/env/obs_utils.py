@@ -2,7 +2,7 @@
 from typing import List, Optional
 import numpy as np
 from .card import Card, card_to_id
-from .game import Game
+from .game import Game, GameMode
 
 MAX_ACTIONS = 300
 
@@ -33,7 +33,15 @@ def obs_for_player(game: Game, player_id: int) -> np.ndarray:
     pc = np.float32(game.pass_count)
     score = np.float32(game.player_510k_scores[player_id])
 
-    return np.concatenate([hand, last_play, [last_type], hand_sizes, [cp], [pc], [score]])
+    obs = np.concatenate([hand, last_play, [last_type], hand_sizes, [cp], [pc], [score]])
+    if game.mode == GameMode.OBVIOUS:
+        team_bits = np.zeros(4, dtype=np.float32)
+        if game.red_a_team is not None:
+            for i in range(4):
+                if i != player_id and i in game.red_a_team:
+                    team_bits[i] = 1.0
+        obs = np.concatenate([obs, team_bits])
+    return obs
 
 
 def action_mask_for_player(game: Game, player_id: int) -> np.ndarray:

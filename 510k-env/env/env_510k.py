@@ -34,6 +34,9 @@ class FiveTenKEnv(gym.Env):
         self.render_mode = render_mode
 
         obs_dim = self.n_cards * 2 + 1 + 4 + 1 + 1 + 1
+        if self.mode == GameMode.OBVIOUS:
+            obs_dim += 4  # teammate one-hot
+        self.obs_dim = obs_dim
         self.action_space = spaces.Discrete(MAX_ACTIONS)
         self.observation_space = spaces.Box(
             low=0, high=1,
@@ -73,7 +76,15 @@ class FiveTenKEnv(gym.Env):
         pc = np.float32(self.game.pass_count if self.game else 0)
         score = np.float32(self.game.player_510k_scores[self.agent_id] if self.game else 0.0)
 
-        return np.concatenate([hand, last_play, [last_type], hand_sizes, [cp], [pc], [score]])
+        obs = np.concatenate([hand, last_play, [last_type], hand_sizes, [cp], [pc], [score]])
+        if self.mode == GameMode.OBVIOUS:
+            team_bits = np.zeros(4, dtype=np.float32)
+            if self.game and self.game.red_a_team is not None:
+                for i in range(4):
+                    if i != self.agent_id and i in self.game.red_a_team:
+                        team_bits[i] = 1.0
+            obs = np.concatenate([obs, team_bits])
+        return obs
 
     def _get_action_mask(self) -> np.ndarray:
         mask = np.zeros(MAX_ACTIONS, dtype=np.int64)
@@ -159,6 +170,13 @@ class FiveTenKEnv(gym.Env):
 
     def _policy_bot_act(self, player_idx: int, actions: List[Pattern]) -> Pattern:
         obs = obs_for_player(self.game, player_idx)
+        # If the model expects Dict obs (e.g., MAPPO), build it
+        from gymnasium import spaces as gspaces
+        if isinstance(self._model_bot.observation_space, gspaces.Dict):
+            global_obs = np.concatenate([
+                obs_for_player(self.game, i) for i in range(self.game.num_players)
+            ])
+            obs = {'local': obs.astype(np.float32), 'global': global_obs.astype(np.float32)}
         mask = action_mask_for_player(self.game, player_idx)
         action, _ = self._model_bot.predict(obs, action_masks=mask, deterministic=False)
         idx = int(action) - 1

@@ -48,7 +48,7 @@ if __name__ == '__main__':
     import argparse
     p = argparse.ArgumentParser()
     p.add_argument('--mode', type=str, required=True,
-                   choices=['single', 'static', 'dynamic'])
+                   choices=['single', 'static', 'dynamic', 'obvious'])
     p.add_argument('--seeds', type=int, default=4)
     p.add_argument('--start-seed', type=int, default=61)
     p.add_argument('--timesteps', type=int, default=1_000_000)

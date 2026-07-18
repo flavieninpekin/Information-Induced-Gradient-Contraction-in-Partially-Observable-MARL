@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  15 JUL 2026 22:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  16 JUL 2026 11:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -451,69 +451,64 @@ avi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
 {C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf-
 pc.enc}]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 118.
+e 136.
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 118.
+(Font)              scaled to size 10.0pt on input line 136.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.95pt on input line 137.
+(Font)              scaled to size 10.95pt on input line 155.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.95pt on input line 137.
+(Font)              scaled to size 10.95pt on input line 155.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 7.0pt on input line 169.
+(Font)              scaled to size 7.0pt on input line 190.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 5.0pt on input line 169.
-
-
-LaTeX Warning: Reference `tab:features' on page 2 undefined on input line 192.
+(Font)              scaled to size 5.0pt on input line 190.
 
 [2{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
 enc}]
-
-LaTeX Warning: Reference `tab:distances' on page 3 undefined on input line 202.
-
-
-<figures/fig_stability_map.pdf, id=25, 542.025pt x 397.485pt>
+<figures/fig_stability_map.pdf, id=22, 542.025pt x 397.485pt>
 File: figures/fig_stability_map.pdf Graphic file (type pdf)
 <use figures/fig_stability_map.pdf>
-Package pdftex.def Info: figures/fig_stability_map.pdf  used on input line 256.
+Package pdftex.def Info: figures/fig_stability_map.pdf  used on input line 277.
 
 (pdftex.def)             Requested size: 239.39438pt x 175.55504pt.
-[3 <./figures/fig_stability_map.pdf>]
-Underfull \hbox (badness 1400) in paragraph at lines 299--300
+ [3]
+Underfull \hbox (badness 1400) in paragraph at lines 320--321
 []\T1/ntxtlf/m/n/10 Figure 2[] vi-su-al-izes the train-ing tra-jec-to-ries in t
 he
  []
 
-<figures/fig_trajectories.pdf, id=87, 397.485pt x 650.43pt>
+<figures/fig_trajectories.pdf, id=29, 397.485pt x 650.43pt>
 File: figures/fig_trajectories.pdf Graphic file (type pdf)
 <use figures/fig_trajectories.pdf>
-Package pdftex.def Info: figures/fig_trajectories.pdf  used on input line 303.
+Package pdftex.def Info: figures/fig_trajectories.pdf  used on input line 324.
 (pdftex.def)             Requested size: 239.39438pt x 391.74973pt.
 
-Underfull \hbox (badness 2384) in paragraph at lines 306--306
+Underfull \hbox (badness 2384) in paragraph at lines 327--327
 []\T1/ntxtlf/m/n/10 Figure 2: |Train-ing tra-jec-to-ries in the MyHandSize--
  []
 
-[4 <./figures/fig_trajectories.pdf>] (paper.bbl [5]) [6
+[4 <./figures/fig_stability_map.pdf>]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[5] [6
+
+ <./figures/fig_trajectories.pdf>] (paper.bbl) [7
 
 ] (paper.aux)
  ***********
 LaTeX2e <2026-06-01>
 L3 programming layer <2020/03/25>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
  ) 
 Here is how much of TeX's memory you used:
- 8957 strings out of 467509
- 143117 string characters out of 5408780
- 576220 words of memory out of 5000000
- 38047 multiletter control sequences out of 15000+600000
+ 8975 strings out of 467509
+ 143681 string characters out of 5408780
+ 579627 words of memory out of 5000000
+ 38065 multiletter control sequences out of 15000+600000
  675542 words of font info for 81 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  89i,11n,117p,404b,399s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -536,9 +531,9 @@ fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Local/Programs/MiK
 TeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/Local/Programs/Mi
 KTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/Local/Programs/M
 iKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (6 pages, 325836 bytes).
+Output written on paper.pdf (7 pages, 327584 bytes).
 PDF statistics:
- 237 PDF objects out of 1000 (max. 8388607)
+ 242 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 

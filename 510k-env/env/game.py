@@ -10,6 +10,7 @@ class GameMode(Enum):
     SINGLE = 'single'
     STATIC = 'static'
     DYNAMIC = 'dynamic'
+    OBVIOUS = 'obvious'  # DYNAMIC rules + known team info (ablation)
 
 
 @dataclass
@@ -59,7 +60,7 @@ class Game:
         self.started = True
         self.player_510k_scores = [0, 0, 0, 0]
         self.trick_pending_score = 0
-        if self.mode == GameMode.DYNAMIC:
+        if self.mode in (GameMode.DYNAMIC, GameMode.OBVIOUS):
             self.red_a_team = self._compute_red_a_team()
         else:
             self.red_a_team = None
@@ -81,7 +82,7 @@ class Game:
 
     @property
     def is_over(self) -> bool:
-        if self.mode in (GameMode.STATIC, GameMode.DYNAMIC):
+        if self.mode in (GameMode.STATIC, GameMode.DYNAMIC, GameMode.OBVIOUS):
             # Check if any team has both players finished
             return len(self.finish_order) >= 2 and self._is_team_finished()
         return len(self.finish_order) >= 1
@@ -93,7 +94,7 @@ class Game:
             finished_set = set(self.finish_order)
             if (0 in finished_set and 2 in finished_set) or (1 in finished_set and 3 in finished_set):
                 return True
-        elif self.mode == GameMode.DYNAMIC:
+        elif self.mode in (GameMode.DYNAMIC, GameMode.OBVIOUS):
             if self.red_a_team is None:
                 return False
             finished_set = set(self.finish_order)
@@ -132,10 +133,10 @@ class Game:
             return []
 
         lt = self.last_trick.pattern if self.last_trick else None
-        # Only current trick leader or if last_trick is None: leading
+        is_reda = self.mode in (GameMode.DYNAMIC, GameMode.OBVIOUS)
         if lt is None:
-            return get_valid_plays(player.hand, None, self.mode == GameMode.DYNAMIC)
-        return get_valid_plays(player.hand, lt, self.mode == GameMode.DYNAMIC)
+            return get_valid_plays(player.hand, None, is_reda)
+        return get_valid_plays(player.hand, lt, is_reda)
 
     def can_pass(self, player_idx: int) -> bool:
         if self.players[player_idx].finished:
@@ -147,13 +148,14 @@ class Game:
         return True
 
     def play_cards(self, player_idx: int, cards: List[Card]) -> bool:
+        is_reda = self.mode in (GameMode.DYNAMIC, GameMode.OBVIOUS)
         if player_idx != self.current_player:
             return False
         player = self.players[player_idx]
         if player.finished:
             return False
 
-        pattern = detect_pattern(cards, self.mode == GameMode.DYNAMIC)
+        pattern = detect_pattern(cards, is_reda)
         if pattern is None:
             return False
 
@@ -164,7 +166,7 @@ class Game:
         # Verify beats last trick
         if self.last_trick is not None and self.last_trick.player != player_idx:
             lt = self.last_trick.pattern
-            if not can_beat(pattern, lt, self.mode == GameMode.DYNAMIC):
+            if not can_beat(pattern, lt, is_reda):
                 return False
 
         # Execute play

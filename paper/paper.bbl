@@ -1,4 +1,4 @@
-\begin{thebibliography}{12}
+\begin{thebibliography}{19}
 \providecommand{\natexlab}[1]{#1}
 
 \bibitem[{Abbeel and Ng(2004)}]{abbeel2004apprenticeship}
@@ -19,12 +19,27 @@ Anahtarci, B.; Kariksiz, C.~D.; and Saldi, N. 2025.
   Mean-Field Games.
 \newblock \emph{arXiv preprint arXiv:2507.14529}.
 
-\bibitem[{Baker et~al.(2019)Baker, Kanitscheider, Markov, Wu, Powell, McGrew,
-  and Mordatch}]{baker2019emergent}
-Baker, B.; Kanitscheider, I.; Markov, T.; Wu, Y.; Powell, G.; McGrew, B.; and
-  Mordatch, I. 2019.
-\newblock Emergent tool use from multi-agent autocurricula.
-\newblock \emph{arXiv preprint arXiv:1909.07528}.
+\bibitem[{Bottou, Curtis, and Nocedal(2018)}]{bottou2018optimization}
+Bottou, L.; Curtis, F.~E.; and Nocedal, J. 2018.
+\newblock Optimization methods for large-scale machine learning.
+\newblock \emph{SIAM Review}, 60(2): 223--311.
+
+\bibitem[{Carroll et~al.(2019)}]{carroll2019utility}
+Carroll, M.; et~al. 2019.
+\newblock Utility and pitfalls of multi-agent reinforcement learning.
+\newblock \emph{arXiv preprint}.
+
+\bibitem[{Ecoffet et~al.(2021)Ecoffet, Huizinga, Lehman, Stanley, and
+  Clune}]{ecoffet2021first}
+Ecoffet, A.; Huizinga, J.; Lehman, J.; Stanley, K.~O.; and Clune, J. 2021.
+\newblock First return, then explore.
+\newblock \emph{Nature}, 590(7847): 580--586.
+
+\bibitem[{Foerster et~al.(2018)Foerster, Farquhar, Afouras, Nardelli, and
+  Whiteson}]{foerster2018counterfactual}
+Foerster, J.; Farquhar, G.; Afouras, T.; Nardelli, N.; and Whiteson, S. 2018.
+\newblock Counterfactual multi-agent policy gradients.
+\newblock In \emph{AAAI Conference on Artificial Intelligence}.
 
 \bibitem[{Huang and Onta{\~n}{\'o}n(2022)}]{huang2022action}
 Huang, S.; and Onta{\~n}{\'o}n, S. 2022.
@@ -40,6 +55,31 @@ Lanctot, M.; Zambaldi, V.; Gruslys, A.; Lazaridou, A.; Tuyls, K.; Perolat, J.;
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}.
 
+\bibitem[{Leibo et~al.(2017)Leibo, Zambaldi, Lanctot, Marecki, and
+  Graepel}]{leibo2017multiagent}
+Leibo, J.~Z.; Zambaldi, V.; Lanctot, M.; Marecki, J.; and Graepel, T. 2017.
+\newblock Multi-agent reinforcement learning in sequential social dilemmas.
+\newblock \emph{Proceedings of the International Conference on Autonomous
+  Agents and Multiagent Systems (AAMAS)}.
+
+\bibitem[{Li et~al.(2018)Li, Xu, Taylor, Studer, and
+  Goldstein}]{li2018visualizing}
+Li, H.; Xu, Z.; Taylor, G.; Studer, C.; and Goldstein, T. 2018.
+\newblock Visualizing the loss landscape of neural nets.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Lu et~al.(2022)}]{lu2022discovered}
+Lu, C.; et~al. 2022.
+\newblock Discovered checkpoints for training pathologies in deep RL.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}.
+
+\bibitem[{Neyshabur et~al.(2017)}]{neyshabur2017implicit}
+Neyshabur, B.; et~al. 2017.
+\newblock Implicit regularization in deep learning.
+\newblock In \emph{International Conference on Machine Learning (ICML)}.
+
 \bibitem[{Raffin et~al.(2021)Raffin, Hill, Gleave, Kanervisto, Ernestus, and
   Dormann}]{raffin2021stable}
 Raffin, A.; Hill, A.; Gleave, A.; Kanervisto, A.; Ernestus, M.; and Dormann, N.
@@ -51,14 +91,6 @@ Raffin, A.; Hill, A.; Gleave, A.; Kanervisto, A.; Ernestus, M.; and Dormann, N.
 Samuel, A.~L. 1959.
 \newblock Some studies in machine learning using the game of checkers.
 \newblock \emph{IBM Journal of Research and Development}.
-
-\bibitem[{Silue et~al.(2026)Silue, Amaya-Corredor, Mannion, Willem, and
-  Libin}]{silue2025hybrid}
-Silue, B.; Amaya-Corredor, S.; Mannion, P.; Willem, L.; and Libin, P. 2026.
-\newblock Hybrid-AIRL: Enhancing Inverse Reinforcement Learning with Supervised
-  Expert Guidance.
-\newblock In \emph{European Symposium on Artificial Neural Networks,
-  Computational Intelligence and Machine Learning (ESANN)}.
 
 \bibitem[{Silver et~al.(2016)Silver, Huang, Maddison, Guez, Sifre, Van
   Den~Driessche, Schrittwieser, Antonoglou, Panneershelvam, Lanctot
@@ -73,6 +105,14 @@ Silver, D.; Huang, A.; Maddison, C.~J.; Guez, A.; Sifre, L.; Van Den~Driessche,
 Tesauro, G. 1995.
 \newblock Temporal difference learning and {TD-Gammon}.
 \newblock \emph{Communications of the ACM}, 38(3): 58--68.
+
+\bibitem[{Vinyals et~al.(2019)Vinyals, Babuschkin, Czarnecki, Mathieu, Dudzik,
+  Chung, Choi, Powell, Ewalds, Georgiev et~al.}]{vinyals2019grandmaster}
+Vinyals, O.; Babuschkin, I.; Czarnecki, W.~M.; Mathieu, M.; Dudzik, A.; Chung,
+  J.; Choi, D.~H.; Powell, R.; Ewalds, T.; Georgiev, P.; et~al. 2019.
+\newblock Grandmaster level in StarCraft II using multi-agent reinforcement
+  learning.
+\newblock \emph{Nature}, 575(7782): 350--354.
 
 \bibitem[{Ziebart et~al.(2008)Ziebart, Maas, Bagnell, and
   Dey}]{ziebart2008maximum}

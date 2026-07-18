@@ -15,7 +15,7 @@ class Scorer:
                 rewards[i] += float(self.game.player_510k_scores[i])
         elif mode == GameMode.STATIC:
             rewards = self._score_team(teams={0: 0, 1: 1, 2: 0, 3: 1})
-        elif mode == GameMode.DYNAMIC:
+        elif mode in (GameMode.DYNAMIC, GameMode.OBVIOUS):
             red_team = self._determine_red_a_team()
             if red_team is None:
                 rewards = self._score_single()
