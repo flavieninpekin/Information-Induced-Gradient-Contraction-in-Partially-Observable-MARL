@@ -178,7 +178,10 @@ class FiveTenKEnv(gym.Env):
             ])
             obs = {'local': obs.astype(np.float32), 'global': global_obs.astype(np.float32)}
         mask = action_mask_for_player(self.game, player_idx)
-        action, _ = self._model_bot.predict(obs, action_masks=mask, deterministic=False)
+        try:
+            action, _ = self._model_bot.predict(obs, action_masks=mask, deterministic=False)
+        except Exception:
+            return random.choice(actions)
         idx = int(action) - 1
         if 0 <= idx < len(actions):
             return actions[idx]

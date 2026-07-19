@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  16 JUL 2026 11:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  19 JUL 2026 12:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -425,23 +425,23 @@ LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
 (Font)              scaled to size 9.0pt on input line 36.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
 (Font)              scaled to size 10.0pt on input line 39.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 43.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 45.
 
  (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 43.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 45.
 
 
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 9.0pt on input line 45.
+(Font)              scaled to size 9.0pt on input line 47.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/sc' will be
-(Font)              scaled to size 10.0pt on input line 68.
+(Font)              scaled to size 10.0pt on input line 77.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/it' will be
-(Font)              scaled to size 10.0pt on input line 96.
+(Font)              scaled to size 10.0pt on input line 105.
 
 [1{C:/Users/Flavi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Fl
 avi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
@@ -451,42 +451,37 @@ avi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
 {C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf-
 pc.enc}]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 136.
+e 145.
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 136.
+(Font)              scaled to size 10.0pt on input line 145.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.95pt on input line 155.
+(Font)              scaled to size 10.95pt on input line 167.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.95pt on input line 155.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 7.0pt on input line 190.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 5.0pt on input line 190.
+(Font)              scaled to size 10.95pt on input line 167.
 
 [2{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
 enc}]
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 7.0pt on input line 206.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 5.0pt on input line 206.
 <figures/fig_stability_map.pdf, id=22, 542.025pt x 397.485pt>
 File: figures/fig_stability_map.pdf Graphic file (type pdf)
 <use figures/fig_stability_map.pdf>
-Package pdftex.def Info: figures/fig_stability_map.pdf  used on input line 277.
+Package pdftex.def Info: figures/fig_stability_map.pdf  used on input line 303.
 
 (pdftex.def)             Requested size: 239.39438pt x 175.55504pt.
  [3]
-Underfull \hbox (badness 1400) in paragraph at lines 320--321
-[]\T1/ntxtlf/m/n/10 Figure 2[] vi-su-al-izes the train-ing tra-jec-to-ries in t
-he
- []
-
 <figures/fig_trajectories.pdf, id=29, 397.485pt x 650.43pt>
 File: figures/fig_trajectories.pdf Graphic file (type pdf)
 <use figures/fig_trajectories.pdf>
-Package pdftex.def Info: figures/fig_trajectories.pdf  used on input line 324.
+Package pdftex.def Info: figures/fig_trajectories.pdf  used on input line 348.
 (pdftex.def)             Requested size: 239.39438pt x 391.74973pt.
 
-Underfull \hbox (badness 2384) in paragraph at lines 327--327
+Underfull \hbox (badness 2384) in paragraph at lines 351--351
 []\T1/ntxtlf/m/n/10 Figure 2: |Train-ing tra-jec-to-ries in the MyHandSize--
  []
 
@@ -494,20 +489,22 @@ Underfull \hbox (badness 2384) in paragraph at lines 327--327
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[5] [6
-
- <./figures/fig_trajectories.pdf>] (paper.bbl) [7
+[5] [6 <./figures/fig_trajectories.pdf>] (paper.bbl) [7
 
 ] (paper.aux)
  ***********
 LaTeX2e <2026-06-01>
 L3 programming layer <2020/03/25>
  ***********
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
  ) 
 Here is how much of TeX's memory you used:
  8975 strings out of 467509
  143681 string characters out of 5408780
- 579627 words of memory out of 5000000
+ 580627 words of memory out of 5000000
  38065 multiletter control sequences out of 15000+600000
  675542 words of font info for 81 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -531,7 +528,7 @@ fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Local/Programs/MiK
 TeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/Local/Programs/Mi
 KTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/Local/Programs/M
 iKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (7 pages, 327584 bytes).
+Output written on paper.pdf (7 pages, 330169 bytes).
 PDF statistics:
  242 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

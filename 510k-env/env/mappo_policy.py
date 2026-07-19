@@ -1,8 +1,8 @@
 """
 MAPPO custom policy: centralized critic using global observation.
-Relies on parent MaskableActorCriticPolicy for most logic.
+Actor uses local obs only; critic uses global obs.
 """
-import torch
+import torch as th
 import torch.nn as nn
 from sb3_contrib.common.maskable.policies import MaskableActorCriticPolicy
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
@@ -12,24 +12,45 @@ class MAPPOCentralizedCriticPolicy(MaskableActorCriticPolicy):
     """Actor uses local obs; critic uses global obs (via custom feature extractor)."""
 
     def __init__(self, observation_space, action_space, lr_schedule, *args, **kwargs):
-        kwargs['share_features_extractor'] = False
+        kwargs['share_features_extractor'] = True
         kwargs['features_extractor_class'] = MAPPOFeatureExtractor
         super().__init__(observation_space, action_space, lr_schedule, *args, **kwargs)
 
+    def extract_features(self, obs, features_extractor=None):
+        # Override: return (actor_features, critic_features) tuple
+        # SB3's forward() will pass this tuple into mlp_extractor.forward()
+        return self.features_extractor(obs)
+
     def _build_mlp_extractor(self):
-        # Override: build custom MLP that processes local+global features
         self.mlp_extractor = MAPPOMlpExtractor(
-            local_dim=256, global_dim=512,
+            actor_dim=256, critic_dim=512,
         )
+
+    def predict_values(self, obs):
+        features = self.extract_features(obs)
+        _, global_feat = features
+        latent_vf = self.mlp_extractor.forward_critic(global_feat)
+        return self.value_net(latent_vf)
+
+    def get_distribution(self, obs, action_masks=None):
+        features = self.extract_features(obs)
+        local_feat, _ = features
+        latent_pi = self.mlp_extractor.forward_actor(local_feat)
+        distribution = self._get_action_dist_from_latent(latent_pi)
+        if action_masks is not None:
+            distribution.apply_masking(action_masks)
+        return distribution
 
 
 class MAPPOFeatureExtractor(BaseFeaturesExtractor):
-    """Separate encoders for local and global observations."""
+    """Separate encoders for local (actor) and global (critic) observations.
+    Returns a tuple (actor_features, critic_features)."""
 
     def __init__(self, observation_space):
         local_dim = observation_space['local'].shape[0]
         global_dim = observation_space['global'].shape[0]
         super().__init__(observation_space, features_dim=256 + 512)
+
         self.local_net = nn.Sequential(
             nn.Linear(local_dim, 256), nn.ReLU(),
             nn.Linear(256, 256), nn.ReLU(),
@@ -40,32 +61,37 @@ class MAPPOFeatureExtractor(BaseFeaturesExtractor):
         )
 
     def forward(self, obs):
-        local = self.local_net(obs['local'])
-        global_ = self.global_net(obs['global'])
-        return nn.functional.relu(torch.cat([local, global_], dim=-1))
+        local_feat = self.local_net(obs['local'])
+        global_feat = self.global_net(obs['global'])
+        return local_feat, global_feat
 
 
 class MAPPOMlpExtractor(nn.Module):
-    """Shared MLP: processes concatenated local+global features."""
+    """Separate MLP heads: actor processes local features, critic processes global features."""
 
-    def __init__(self, local_dim=256, global_dim=512):
+    def __init__(self, actor_dim=256, critic_dim=512):
         super().__init__()
         self.latent_dim_pi = 128
         self.latent_dim_vf = 256
-        self.shared_net = nn.Sequential(
-            nn.Linear(local_dim + global_dim, 512), nn.ReLU(),
-        )
+
         self.policy_net = nn.Sequential(
-            nn.Linear(512, 256), nn.ReLU(),
-            nn.Linear(256, self.latent_dim_pi), nn.ReLU(),
+            nn.Linear(actor_dim, 256), nn.ReLU(),
+            nn.Linear(256, self.latent_dim_pi),
         )
         self.value_net = nn.Sequential(
+            nn.Linear(critic_dim, 512), nn.ReLU(),
             nn.Linear(512, 256), nn.ReLU(),
-            nn.Linear(256, self.latent_dim_vf), nn.ReLU(),
+            nn.Linear(256, self.latent_dim_vf),
         )
 
+    def forward(self, features):
+        """Called by SB3 when share_features_extractor=True.
+        Expects a tuple (actor_feat, critic_feat)."""
+        local_feat, global_feat = features
+        return self.policy_net(local_feat), self.value_net(global_feat)
+
     def forward_actor(self, features):
-        return self.policy_net(self.shared_net(features))
+        return self.policy_net(features)
 
     def forward_critic(self, features):
-        return self.value_net(self.shared_net(features))
+        return self.value_net(features)
