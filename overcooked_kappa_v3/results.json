@@ -1,0 +1,86 @@
+{
+  "static": {
+    "seed41": {
+      "kappa": 0.500511109828949,
+      "reward_chef": 187.33333333333334,
+      "reward_waiter": 1.3333333333333333
+    },
+    "seed42": {
+      "kappa": 0.5,
+      "reward_chef": 193.33333333333334,
+      "reward_waiter": 0.0
+    },
+    "seed43": {
+      "kappa": 0.483524352312088,
+      "reward_chef": 172.0,
+      "reward_waiter": 174.66666666666666
+    },
+    "seed44": {
+      "kappa": 0.5,
+      "reward_chef": 194.66666666666666,
+      "reward_waiter": 0.0
+    },
+    "seed45": {
+      "kappa": 0.4928654134273529,
+      "reward_chef": 172.66666666666666,
+      "reward_waiter": 170.0
+    },
+    "seed46": {
+      "kappa": 0.4989178478717804,
+      "reward_chef": 190.0,
+      "reward_waiter": 0.6666666666666666
+    },
+    "seed47": {
+      "kappa": 0.5,
+      "reward_chef": 186.66666666666666,
+      "reward_waiter": 0.0
+    },
+    "seed48": {
+      "kappa": 0.5013673901557922,
+      "reward_chef": 197.33333333333334,
+      "reward_waiter": 1.3333333333333333
+    }
+  },
+  "dynamic": {
+    "seed41": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    },
+    "seed42": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    },
+    "seed43": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    },
+    "seed44": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    },
+    "seed45": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    },
+    "seed46": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    },
+    "seed47": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    },
+    "seed48": {
+      "kappa": 0.0,
+      "reward_chef": 0.0,
+      "reward_waiter": 0.0
+    }
+  }
+}
