@@ -1,0 +1,5 @@
+[00:06:24] ============================================================
+[00:06:24] 10-HOUR MASTER RUN START
+[00:06:24] Total 9 steps
+[00:06:24] ============================================================
+[00:06:24] START 510K_PPO_SINGLE (est 40min): python 510k-env/train_selfplay.py --mode single  --seeds 8 --timesteps 1000000

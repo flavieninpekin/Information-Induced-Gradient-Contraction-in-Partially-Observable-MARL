@@ -1,0 +1,86 @@
+{
+  "static": {
+    "seed41": {
+      "kappa": 0.5,
+      "r_chef": 0.235,
+      "r_waiter": 0.0
+    },
+    "seed42": {
+      "kappa": 0.5,
+      "r_chef": 0.15666666666666668,
+      "r_waiter": 0.0
+    },
+    "seed43": {
+      "kappa": 0.5,
+      "r_chef": 0.19333333333333333,
+      "r_waiter": 0.0
+    },
+    "seed44": {
+      "kappa": 0.5,
+      "r_chef": 0.19666666666666666,
+      "r_waiter": 0.0
+    },
+    "seed45": {
+      "kappa": 0.5,
+      "r_chef": 0.20833333333333334,
+      "r_waiter": 0.0
+    },
+    "seed46": {
+      "kappa": 0.5,
+      "r_chef": 0.17833333333333334,
+      "r_waiter": 0.0
+    },
+    "seed47": {
+      "kappa": 0.5,
+      "r_chef": 0.13833333333333334,
+      "r_waiter": 0.0
+    },
+    "seed48": {
+      "kappa": 0.5,
+      "r_chef": 0.18166666666666667,
+      "r_waiter": 0.0
+    }
+  },
+  "dynamic": {
+    "seed41": {
+      "kappa": 0.5,
+      "r_chef": 0.005,
+      "r_waiter": 0.0
+    },
+    "seed42": {
+      "kappa": 0.0,
+      "r_chef": 0.0,
+      "r_waiter": 0.0
+    },
+    "seed43": {
+      "kappa": 0.0,
+      "r_chef": 0.0,
+      "r_waiter": 0.0
+    },
+    "seed44": {
+      "kappa": 0.0,
+      "r_chef": 0.0,
+      "r_waiter": 0.0
+    },
+    "seed45": {
+      "kappa": 0.5,
+      "r_chef": 0.0016666666666666668,
+      "r_waiter": 0.0
+    },
+    "seed46": {
+      "kappa": 0.0,
+      "r_chef": 0.0,
+      "r_waiter": 0.0
+    },
+    "seed47": {
+      "kappa": 0.0,
+      "r_chef": 0.0,
+      "r_waiter": 0.0
+    },
+    "seed48": {
+      "kappa": 0.0,
+      "r_chef": 0.0,
+      "r_waiter": 0.0
+    }
+  }
+}

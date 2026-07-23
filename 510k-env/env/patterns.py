@@ -53,7 +53,8 @@ class Pattern:
     length: int = 1
 
     def __post_init__(self):
-        object.__setattr__(self, 'cards', sorted(self.cards))
+        object.__setattr__(self, 'cards',
+                          sorted(self.cards, key=lambda c: (c.rank.value, c.suit.value)))
 
     @property
     def name(self) -> str:
@@ -317,7 +318,7 @@ def generate_all_patterns(hand: List[Card], dynamic_mode: bool = False) -> List[
             triple = main_cards[:3]
             for kick_rank, kick_cards in cards_by_rank.items():
                 if kick_rank != main_rank:
-                    patterns.append(Pattern(PatternType.THREE_ONE, main_rank, triple + kick_cards[:1]))
+                    patterns.append(Pattern(PatternType.THREE_ONE, main_rank, triple + list(kick_cards)[:1]))
 
     # --- Three + pair ---
     for main_rank, main_cards in cards_by_rank.items():
@@ -325,7 +326,7 @@ def generate_all_patterns(hand: List[Card], dynamic_mode: bool = False) -> List[
             triple = main_cards[:3]
             for kick_rank, kick_cards in cards_by_rank.items():
                 if kick_rank != main_rank and len(kick_cards) >= 2:
-                    patterns.append(Pattern(PatternType.THREE_PAIR, main_rank, triple + kick_cards[:2]))
+                    patterns.append(Pattern(PatternType.THREE_PAIR, main_rank, triple + list(kick_cards)[:2]))
 
     # --- Bombs ---
     for rank, carlist in cards_by_rank.items():

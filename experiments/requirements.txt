@@ -1,0 +1,15 @@
+# Overcooked + 510K AAAI-27 experiment dependencies
+# Core
+gymnasium>=0.29.0
+stable-baselines3>=2.8.0
+sb3-contrib>=2.8.0
+torch>=2.0.0
+numpy>=1.24,<2.0    # overcooked_ai incompatible with numpy 2.x
+matplotlib>=3.7
+tqdm
+
+# Overcooked AI
+overcooked_ai==1.1.0
+
+# For path integral analysis
+scipy
