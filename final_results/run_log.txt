@@ -3,3 +3,9 @@
 [00:06:24] Total 9 steps
 [00:06:24] ============================================================
 [00:06:24] START 510K_PPO_SINGLE (est 40min): python 510k-env/train_selfplay.py --mode single  --seeds 8 --timesteps 1000000
+[00:44:21]   FAIL(1) in 37.9min
+[00:44:21] START 510K_PPO_STATIC (est 40min): python 510k-env/train_selfplay.py --mode static  --seeds 8 --timesteps 1000000
+[02:18:32]   FAIL(1) in 94.2min
+[02:18:32] START 510K_PPO_DYNAMIC (est 40min): python 510k-env/train_selfplay.py --mode dynamic --seeds 8 --timesteps 1000000
+[03:12:35]   FAIL(3221226505) in 54.0min
+[03:12:35] START 510K_A2C_STATIC (est 40min): python 510k-env/train_510k_a2c_static.py

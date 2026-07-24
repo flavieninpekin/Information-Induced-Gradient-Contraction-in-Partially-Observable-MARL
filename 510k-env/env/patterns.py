@@ -53,8 +53,9 @@ class Pattern:
     length: int = 1
 
     def __post_init__(self):
-        object.__setattr__(self, 'cards',
-                          sorted(self.cards, key=lambda c: (c.rank.value, c.suit.value)))
+        cards = list(self.cards)
+        cards.sort(key=lambda c: (c.rank.value, c.suit.value))
+        object.__setattr__(self, 'cards', cards)
 
     @property
     def name(self) -> str:
