@@ -1,116 +1,100 @@
-"""Generate paper figures from self-play evaluation results."""
-import json, os, numpy as np
+"""Generate kappa comparison figure."""
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import numpy as np
+import os
 
-OUTPUT_DIR = 'paper/figures'
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
 
-FEATURE_NAMES = ['MyScore', 'MyHandSize', 'MyStrength', 'TrickScore', 'PassCount']
-SHORT_NAMES = ['Score', 'HandSize', 'Strength', 'TrickStake', 'PassCount']
-COLORS = {'SINGLE': '#2196F3', 'STATIC': '#4CAF50', 'DYNAMIC_A': '#FF9800', 'DYNAMIC_B': '#FF5722'}
-
-# Data from eval_all_sp.py run
-data = {
-    ('SINGLE', 'seed41'):      [0.0669, 0.3825, 0.4929, 0.0630, 0.1922],
-    ('STATIC', 'seed41'):      [0.0639, 0.3692, 0.4996, 0.0406, 0.1762],
-    ('DYNAMIC', 'seed41'):     [0.0512, 0.2977, 0.5047, 0.0291, 0.1896],
-    ('DYNAMIC', 'seed42'):     [0.0577, 0.3330, 0.5219, 0.0365, 0.1826],
-    ('DYNAMIC', 'seed43'):     [0.0544, 0.3152, 0.5146, 0.0388, 0.1772],
-    ('DYNAMIC', 'seed44'):     [0.0522, 0.3019, 0.5193, 0.0340, 0.1764],
-    ('DYNAMIC', 'seed45'):     [0.0655, 0.3664, 0.5017, 0.0433, 0.1879],
-    ('DYNAMIC', 'seed46'):     [0.0647, 0.3664, 0.5060, 0.0436, 0.1762],
+# Panel A: PG methods on Toy
+envs = ['Toy', '510K', 'Overcooked']
+algos = ['PPO', 'A2C']
+# (revealed_k, hidden_k, revealed_std, hidden_std)
+pg_data = {
+    ('Toy', 'PPO'): (0.746, 0.049, 0.100, 0.078),
+    ('Toy', 'A2C'): (0.839, 0.243, 0.025, 0.378),
+    ('510K', 'PPO'): (0.569, 0.386, 0.000, 0.025),
+    ('510K', 'A2C'): (0.644, 0.519, 0.201, 0.060),
+    ('Overcooked', 'PPO'): (0.497, 0.000, 0.006, 0.000),
 }
+colors_pg = {'PPO': '#2196F3', 'A2C': '#4CAF50'}
 
-# ============================================================
-# Figure 1: Grouped bar chart comparing SINGLE, STATIC, DYNAMIC
-# ============================================================
-fig, ax = plt.subplots(figsize=(7.5, 3.5))
+x = np.arange(len(envs))
+w = 0.25
 
-# Use averages for clusters
-dyn_a = np.mean([data[('DYNAMIC', f'seed{s}')] for s in ['41','42','43','44']], axis=0)
-dyn_b = np.mean([data[('DYNAMIC', f'seed{s}')] for s in ['45','46']], axis=0)
+for i, algo in enumerate(algos):
+    rv, hv, rs, hs = [], [], [], []
+    for env in envs:
+        if (env, algo) in pg_data:
+            d = pg_data[(env, algo)]
+            rv.append(d[0]); hv.append(d[1]); rs.append(d[2]); hs.append(d[3])
+        else:
+            rv.append(0); hv.append(0); rs.append(0); hs.append(0)
 
-groups = {
-    'SINGLE': data[('SINGLE','seed41')],
-    'STATIC': data[('STATIC','seed41')],
-    'DYN-A': dyn_a,
-    'DYN-B': dyn_b,
-}
+    offset = (i - 0.5) * w
+    ax1.bar(x + offset - w*0.2, rv, w*0.4, yerr=rs, color=colors_pg[algo], alpha=0.9,
+            label=f'{algo} Revealed' if i == 0 else '')
+    ax1.bar(x + offset + w*0.2, hv, w*0.4, yerr=hs, color=colors_pg[algo], alpha=0.3,
+            label=f'{algo} Hidden' if i == 0 else '', hatch='///')
 
-x = np.arange(len(FEATURE_NAMES))
-w = 0.2
-for i, (label, vals) in enumerate(groups.items()):
-    color = COLORS.get(label, '#9E9E9E')
-    bars = ax.bar(x + (i-1.5)*w, vals, w, label=label, color=color, alpha=0.85)
+ax1.set_xticks(x)
+ax1.set_xticklabels(envs, fontsize=11)
+ax1.set_ylabel(r'$\kappa$', fontsize=13)
+ax1.set_title('Policy-Gradient Methods\n' + r'$\kappa_\mathrm{revealed} > \kappa_\mathrm{hidden}$', fontsize=11)
+ax1.legend(fontsize=8, loc='upper right')
+ax1.set_ylim(0, 1.05)
+ax1.axhline(y=0.5, color='gray', linestyle='--', alpha=0.3)
 
-ax.set_ylabel('Feature Expectation', fontsize=11)
-ax.set_xticks(x)
-ax.set_xticklabels(SHORT_NAMES, fontsize=9)
-ax.legend(fontsize=8, ncol=2)
-ax.set_title('Feature Profiles of Self-Play Trained Policies', fontsize=11)
-ax.set_ylim(0, 0.65)
+# Panel B: Cross-family comparison
+comparisons = [
+    ("PPO\n(Toy)", 0.746, 0.049, 0.100, 0.078, '#2196F3', 'PG'),
+    ("A2C\n(510K)", 0.644, 0.519, 0.201, 0.060, '#4CAF50', 'PG'),
+    ("PPO\n(Overcooked)", 0.497, 0.000, 0.006, 0.000, '#1565C0', 'PG'),
+    ("DQN\n(510K)", 0.797, 0.917, 0.123, 0.063, '#FF5722', 'Value'),
+    ("SAC\n(510K)", 0.504, 0.540, 0.038, 0.069, '#9C27B0', 'AC'),
+    ("REINFORCE\n(510K)", 0.487, 0.605, 0.312, 0.238, '#795548', 'PG-v'),
+]
+
+labels = [c[0] for c in comparisons]
+x = np.arange(len(labels))
+
+for i, (label, rk, hk, rs, hs, color, fam) in enumerate(comparisons):
+    ax2.bar(i - 0.18, rk, 0.33, color=color, alpha=0.9)
+    ax2.bar(i + 0.18, hk, 0.33, color=color, alpha=0.25, hatch='///')
+
+# Legend
+from matplotlib.patches import Patch
+legend_elements = [
+    Patch(facecolor='gray', alpha=0.9, label='Revealed/Static'),
+    Patch(facecolor='gray', alpha=0.25, hatch='///', label='Hidden/Dynamic'),
+]
+ax2.legend(handles=legend_elements, fontsize=8, loc='upper right')
+
+# Family labels
+for i, (label, rk, hk, rs, hs, color, fam) in enumerate(comparisons):
+    if fam == 'PG':
+        ax2.text(i, 1.02, 'PG', ha='center', fontsize=7, fontweight='bold', color='#1565C0')
+    elif fam == 'Value':
+        ax2.text(i, 1.02, 'Value', ha='center', fontsize=7, fontweight='bold', color='#E65100')
+    elif fam == 'AC':
+        ax2.text(i, 1.02, 'AC', ha='center', fontsize=7, fontweight='bold', color='#7B1FA2')
+    elif fam == 'PG-v':
+        ax2.text(i, 1.02, 'PG-v', ha='center', fontsize=7, fontweight='bold', color='#5D4037')
+
+ax2.set_xticks(x)
+ax2.set_xticklabels(labels, fontsize=8)
+ax2.set_ylabel(r'$\kappa$', fontsize=13)
+ax2.set_title('Cross-Family Comparison', fontsize=11)
+ax2.set_ylim(0, 1.15)
+ax2.axhline(y=0.5, color='gray', linestyle='--', alpha=0.3)
+
+fig.suptitle(r'$\kappa$: Diagnosing Gradient Contraction from Hidden Information',
+             fontsize=13, fontweight='bold')
 fig.tight_layout()
-fig.savefig(os.path.join(OUTPUT_DIR, 'fig_feature_profiles.pdf'), dpi=300)
-fig.savefig(os.path.join(OUTPUT_DIR, 'fig_feature_profiles.png'), dpi=200)
-print('Saved fig_feature_profiles')
 
-# ============================================================
-# Figure 2: DYNAMIC seed scatter (all 6 seeds)
-# ============================================================
-fig2, ax2 = plt.subplots(figsize=(5, 4))
-dyn_seeds = [('seed41','A'), ('seed42','A'), ('seed43','A'), ('seed44','A'),
-             ('seed45','B'), ('seed46','B')]
+out_dir = os.path.join(os.path.dirname(__file__), '..', 'paper', 'figures')
+os.makedirs(out_dir, exist_ok=True)
+fig.savefig(os.path.join(out_dir, 'kappa_figure.pdf'), dpi=200, bbox_inches='tight')
+fig.savefig(os.path.join(out_dir, 'kappa_figure.png'), dpi=200, bbox_inches='tight')
+print('Figure saved to paper/figures/kappa_figure.{pdf,png}')
 
-for seed, cluster in dyn_seeds:
-    v = data[('DYNAMIC', seed)]
-    c = COLORS['DYNAMIC_A'] if cluster == 'A' else COLORS['DYNAMIC_B']
-    ax2.scatter(v[1], v[2], s=120, c=c, alpha=0.8, edgecolors='black', linewidth=0.5, zorder=3)
-    ax2.annotate(seed.replace('seed','s'), (v[1], v[2]), textcoords="offset points", xytext=(5,5), fontsize=8)
-
-# Add SINGLE and STATIC references
-sv = data[('SINGLE','seed41')]
-tv = data[('STATIC','seed41')]
-ax2.scatter(sv[1], sv[2], marker='s', s=120, c=COLORS['SINGLE'], alpha=0.8, edgecolors='black', linewidth=0.5, zorder=3, label='SINGLE')
-ax2.scatter(tv[1], tv[2], marker='^', s=120, c=COLORS['STATIC'], alpha=0.8, edgecolors='black', linewidth=0.5, zorder=3, label='STATIC')
-ax2.annotate('SINGLE', (sv[1], sv[2]), textcoords="offset points", xytext=(-40,-15), fontsize=9)
-ax2.annotate('STATIC', (tv[1], tv[2]), textcoords="offset points", xytext=(5,-15), fontsize=9)
-
-ax2.set_xlabel('MyHandSize', fontsize=11)
-ax2.set_ylabel('MyStrength', fontsize=11)
-ax2.set_title('DYNAMIC Seeds: Bimodal Distribution', fontsize=11)
-ax2.legend(fontsize=9)
-fig2.tight_layout()
-fig2.savefig(os.path.join(OUTPUT_DIR, 'fig_dynamic_bimodal.pdf'), dpi=300)
-fig2.savefig(os.path.join(OUTPUT_DIR, 'fig_dynamic_bimodal.png'), dpi=200)
-print('Saved fig_dynamic_bimodal')
-
-# ============================================================
-# Figure 3: Radar chart (3 policies)
-# ============================================================
-fig3, ax3 = plt.subplots(figsize=(4.5, 4.5), subplot_kw=dict(polar=True))
-angles = np.linspace(0, 2*np.pi, len(FEATURE_NAMES), endpoint=False).tolist()
-angles += angles[:1]
-
-for label, color in [('SINGLE', COLORS['SINGLE']), ('STATIC', COLORS['STATIC'])]:
-    vals = data[(label,'seed41')] + [data[(label,'seed41')][0]]
-    ax3.plot(angles, vals, 'o-', label=label, color=color, linewidth=2)
-    ax3.fill(angles, vals, alpha=0.1, color=color)
-
-vals = dyn_a.tolist() + [dyn_a[0]]
-ax3.plot(angles, vals, 'o-', label='DYN-A', color=COLORS['DYNAMIC_A'], linewidth=2)
-ax3.fill(angles, vals, alpha=0.1, color=COLORS['DYNAMIC_A'])
-vals = dyn_b.tolist() + [dyn_b[0]]
-ax3.plot(angles, vals, 'o--', label='DYN-B', color=COLORS['DYNAMIC_B'], linewidth=2)
-
-ax3.set_xticks(angles[:-1])
-ax3.set_xticklabels(SHORT_NAMES, fontsize=9)
-ax3.legend(fontsize=8, loc='upper right', bbox_to_anchor=(1.35, 1.1))
-ax3.set_ylim(0, 0.6)
-ax3.set_title('Policy Feature Profiles (Radar)', fontsize=11, pad=20)
-fig3.tight_layout()
-fig3.savefig(os.path.join(OUTPUT_DIR, 'fig_radar.pdf'), dpi=300)
-fig3.savefig(os.path.join(OUTPUT_DIR, 'fig_radar.png'), dpi=200)
-print('Saved fig_radar')
-
-print('\nAll figures saved to paper/figures/')
