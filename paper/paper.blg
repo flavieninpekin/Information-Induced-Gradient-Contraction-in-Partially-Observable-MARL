@@ -3,46 +3,51 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: paper.aux
 Reallocating 'name_of_file' (item size: 1) to 9 items.
 The style file: aaai2027.bst
+Illegal, another \bibstyle command---line 31 of file paper.aux
+ : \bibstyle
+ :          {aaai2027}
+I'm skipping whatever remains of this command
 Reallocating 'name_of_file' (item size: 1) to 11 items.
 Database file #1: references.bib
 You've used 19 entries,
             2840 wiz_defined-function locations,
-            679 strings with 8038 characters,
-and the built_in function-call counts, 12789 in all, are:
-= -- 939
-> -- 840
+            682 strings with 8260 characters,
+and the built_in function-call counts, 13325 in all, are:
+= -- 968
+> -- 902
 < -- 0
-+ -- 311
-- -- 291
-* -- 946
-:= -- 2209
++ -- 337
+- -- 313
+* -- 1016
+:= -- 2281
 add.period$ -- 76
 call.type$ -- 19
-change.case$ -- 174
+change.case$ -- 179
 chr.to.int$ -- 20
 cite$ -- 19
-duplicate$ -- 842
-empty$ -- 785
-format.name$ -- 341
-if$ -- 2384
+duplicate$ -- 861
+empty$ -- 802
+format.name$ -- 366
+if$ -- 2478
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 198
+missing$ -- 208
 newline$ -- 99
 num.names$ -- 76
-pop$ -- 439
+pop$ -- 454
 preamble$ -- 1
-purify$ -- 160
+purify$ -- 167
 quote$ -- 0
-skip$ -- 357
+skip$ -- 364
 stack$ -- 0
-substring$ -- 343
-swap$ -- 422
+substring$ -- 372
+swap$ -- 449
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 171
+type$ -- 168
 warning$ -- 0
-while$ -- 88
+while$ -- 90
 width$ -- 0
-write$ -- 237
+write$ -- 238
+(There was 1 error message)

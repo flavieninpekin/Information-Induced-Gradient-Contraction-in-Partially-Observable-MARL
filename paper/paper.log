@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  19 JUL 2026 12:37
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  25 JUL 2026 22:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -194,66 +194,9 @@ Package caption Info: Standard document class detected.
 \c@caption@flags=\count292
 \c@continuedfloat=\count293
 )
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/algorithms\algorithm.st
-y
-Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
-nment
- (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
-Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count294
-\float@exts=\toks19
-\float@box=\box53
-\@float@everytoks=\toks20
-\@floatcapt=\box54
-)
-\@float@every@algorithm=\toks21
-\c@algorithm=\count295
-)
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/algorithms\algorithmic.
-sty
-Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
-\c@ALC@unique=\count296
-\c@ALC@line=\count297
-\c@ALC@rem=\count298
-\c@ALC@depth=\count299
-\ALC@tlm=\skip54
-\algorithmicindent=\skip55
-)
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newfloat\newfloat.sty
-Package: newfloat 2023/10/01 v1.2 Defining new floating environments (AR)
-)
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
-\lst@mode=\count300
-\lst@gtempboxa=\box55
-\lst@token=\toks22
-\lst@length=\count301
-\lst@currlwidth=\dimen175
-\lst@column=\count302
-\lst@pos=\count303
-\lst@lostspace=\dimen176
-\lst@width=\dimen177
-\lst@newlines=\count304
-\lst@lineno=\count305
-\lst@maxwidth=\dimen178
-
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
-File: lstpatch.sty 2025/11/14 1.11b (Carsten Heinz)
-)
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
-File: lstmisc.sty 2025/11/14 1.11b (Carsten Heinz)
-\c@lstnumber=\count306
-\lst@skipnumbers=\count307
-\lst@framebox=\box56
-)
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
-File: listings.cfg 2025/11/14 1.11b listings configuration
-))
-Package: listings 2025/11/14 1.11b (Carsten Heinz)
-\@float@every@listing=\toks23
-\c@listing=\count308
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
 Package: amsmath 2026/05/19 v2.18d AMS math features
-\@mathmargin=\skip56
+\@mathmargin=\skip54
 
 For additional information on amsmath, use the `?' option.
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
@@ -261,61 +204,61 @@ Package: amstext 2024/11/17 v2.01 AMS text
 
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
-\@emptytoks=\toks24
-\ex@=\dimen179
+\@emptytoks=\toks19
+\ex@=\dimen175
 ))
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen180
+\pmbraise@=\dimen176
 )
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
-\inf@bad=\count309
+\inf@bad=\count294
 LaTeX Info: Redefining \frac on input line 233.
-\uproot@=\count310
-\leftroot@=\count311
+\uproot@=\count295
+\leftroot@=\count296
 LaTeX Info: Redefining \overline on input line 398.
 LaTeX Info: Redefining \colon on input line 409.
-\classnum@=\count312
-\DOTSCASE@=\count313
+\classnum@=\count297
+\DOTSCASE@=\count298
 LaTeX Info: Redefining \ldots on input line 495.
 LaTeX Info: Redefining \dots on input line 498.
 LaTeX Info: Redefining \cdots on input line 619.
-\Mathstrutbox@=\box57
-\strutbox@=\box58
+\Mathstrutbox@=\box53
+\strutbox@=\box54
 LaTeX Info: Redefining \big on input line 721.
 LaTeX Info: Redefining \Big on input line 722.
 LaTeX Info: Redefining \bigg on input line 723.
 LaTeX Info: Redefining \Bigg on input line 724.
-\big@size=\dimen181
+\big@size=\dimen177
 LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
-\macc@depth=\count314
+\macc@depth=\count299
 LaTeX Info: Redefining \bmod on input line 904.
 LaTeX Info: Redefining \pmod on input line 909.
 LaTeX Info: Redefining \smash on input line 939.
 LaTeX Info: Redefining \relbar on input line 969.
 LaTeX Info: Redefining \Relbar on input line 970.
-\c@MaxMatrixCols=\count315
+\c@MaxMatrixCols=\count300
 \dotsspace@=\muskip18
-\c@parentequation=\count316
-\dspbrk@lvl=\count317
-\tag@help=\toks25
-\row@=\count318
-\column@=\count319
-\maxfields@=\count320
-\andhelp@=\toks26
-\eqnshift@=\dimen182
-\alignsep@=\dimen183
-\tagshift@=\dimen184
-\tagwidth@=\dimen185
-\totwidth@=\dimen186
-\lineht@=\dimen187
-\@envbody=\toks27
-\multlinegap=\skip57
-\multlinetaggap=\skip58
-\mathdisplay@stack=\toks28
+\c@parentequation=\count301
+\dspbrk@lvl=\count302
+\tag@help=\toks20
+\row@=\count303
+\column@=\count304
+\maxfields@=\count305
+\andhelp@=\toks21
+\eqnshift@=\dimen178
+\alignsep@=\dimen179
+\tagshift@=\dimen180
+\tagwidth@=\dimen181
+\totwidth@=\dimen182
+\lineht@=\dimen183
+\@envbody=\toks22
+\multlinegap=\skip55
+\multlinetaggap=\skip56
+\mathdisplay@stack=\toks23
 LaTeX Info: Redefining \[ on input line 2965.
 LaTeX Info: Redefining \] on input line 2966.
 )
@@ -332,64 +275,74 @@ LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 )) (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.st
 y
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
-\heavyrulewidth=\dimen188
-\lightrulewidth=\dimen189
-\cmidrulewidth=\dimen190
-\belowrulesep=\dimen191
-\belowbottomsep=\dimen192
-\aboverulesep=\dimen193
-\abovetopsep=\dimen194
-\cmidrulesep=\dimen195
-\cmidrulekern=\dimen196
-\defaultaddspace=\dimen197
-\@cmidla=\count321
-\@cmidlb=\count322
-\@aboverulesep=\dimen198
-\@belowrulesep=\dimen199
-\@thisruleclass=\count323
-\@lastruleclass=\count324
-\@thisrulewidth=\dimen256
+\heavyrulewidth=\dimen184
+\lightrulewidth=\dimen185
+\cmidrulewidth=\dimen186
+\belowrulesep=\dimen187
+\belowbottomsep=\dimen188
+\aboverulesep=\dimen189
+\abovetopsep=\dimen190
+\cmidrulesep=\dimen191
+\cmidrulekern=\dimen192
+\defaultaddspace=\dimen193
+\@cmidla=\count306
+\@cmidlb=\count307
+\@aboverulesep=\dimen194
+\@belowrulesep=\dimen195
+\@thisruleclass=\count308
+\@lastruleclass=\count309
+\@thisrulewidth=\dimen196
+) (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
+Package: array 2026/02/24 v2.7b Tabular extension package (FMi)
+\col@sep=\dimen197
+\ar@mcellbox=\box55
+\extrarowheight=\dimen198
+\NC@list=\toks24
+\extratabsurround=\skip57
+\backup@length=\skip58
+\ar@cellbox=\box56
 )
 LaTeX Font Info:    Trying to load font information for T1+ntxtlf on input line
- 35.
+ 23.
+
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\t1ntxtlf.fd
 File: t1ntxtlf.fd 2021/05/24 v1.1 font definition file for T1/ntx/tlf
 )
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 35.
+(Font)              scaled to size 10.0pt on input line 23.
 
 (paper.aux)
 \openout1 = `paper.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
 
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count325
-\scratchdimen=\dimen257
-\scratchbox=\box59
-\nofMPsegments=\count326
-\nofMParguments=\count327
-\everyMPshowfont=\toks29
-\MPscratchCnt=\count328
-\MPscratchDim=\dimen258
-\MPnumerator=\count329
-\makeMPintoPDFobject=\count330
-\everyMPtoPDFconversion=\toks30
+\scratchcounter=\count310
+\scratchdimen=\dimen199
+\scratchbox=\box57
+\nofMPsegments=\count311
+\nofMParguments=\count312
+\everyMPshowfont=\toks25
+\MPscratchCnt=\count313
+\MPscratchDim=\dimen256
+\MPnumerator=\count314
+\makeMPintoPDFobject=\count315
+\everyMPtoPDFconversion=\toks26
 )
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
 ase.sty
@@ -401,47 +354,45 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 fg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-\c@mv@tabular=\count331
-\c@mv@boldtabular=\count332
+\c@mv@tabular=\count316
+\c@mv@boldtabular=\count317
 Package caption Info: Begin \AtBeginDocument code.
-Package caption Info: float package is loaded.
-Package caption Info: listings package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package newfloat Info: `float' package detected.
-\c@lstlisting=\count333
-\c@aaai@eqfn=\count334
-\c@aaai@corrfn=\count335
-\titlearea=\box60
+\c@aaai@eqfn=\count318
+\c@aaai@corrfn=\count319
+\titlearea=\box58
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 14.4pt on input line 36.
+(Font)              scaled to size 14.4pt on input line 24.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 14.4pt on input line 36.
+(Font)              scaled to size 14.4pt on input line 24.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 12.0pt on input line 36.
+(Font)              scaled to size 12.0pt on input line 24.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 12.0pt on input line 36.
+(Font)              scaled to size 12.0pt on input line 24.
 \actualheight=\skip59
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 9.0pt on input line 36.
+(Font)              scaled to size 9.0pt on input line 24.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.0pt on input line 39.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 45.
+(Font)              scaled to size 10.0pt on input line 26.
+LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
+(Font)              scaled to size 9.0pt on input line 31.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 31.
 
  (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 45.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 31.
 
 
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 9.0pt on input line 47.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/sc' will be
-(Font)              scaled to size 10.0pt on input line 77.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/it' will be
-(Font)              scaled to size 10.0pt on input line 105.
+(Font)              scaled to size 9.0pt on input line 35.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/sc' will be
+(Font)              scaled to size 10.0pt on input line 60.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/it' will be
+(Font)              scaled to size 10.0pt on input line 65.
 
 [1{C:/Users/Flavi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Fl
 avi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
@@ -450,69 +401,76 @@ avi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
 
 {C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf-
 pc.enc}]
+Underfull \hbox (badness 1377) in paragraph at lines 101--105
+\T1/ntxtlf/b/n/10 Partial ob-serv-abil-ity in MARL. \T1/ntxtlf/m/n/10 Par-tiall
+y ob-serv-able
+ []
+
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 10.95pt on input line 129.
+LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
+(Font)              scaled to size 10.95pt on input line 129.
+[2]
+Overfull \hbox (11.82707pt too wide) in paragraph at lines 250--262
+ [][] 
+ []
+
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 7.0pt on input line 267.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 5.0pt on input line 267.
+[3]
+<figures/fig_path_lengths.pdf, id=27, 505.89pt x 289.08pt>
+File: figures/fig_path_lengths.pdf Graphic file (type pdf)
+<use figures/fig_path_lengths.pdf>
+Package pdftex.def Info: figures/fig_path_lengths.pdf  used on input line 281.
+(pdftex.def)             Requested size: 239.39438pt x 136.79832pt.
+
+Overfull \hbox (8.5667pt too wide) in paragraph at lines 298--308
+ [][] 
+ []
+
+<figures/kappa_figure.pdf, id=28, 931.96619pt x 358.9045pt>
+File: figures/kappa_figure.pdf Graphic file (type pdf)
+<use figures/kappa_figure.pdf>
+Package pdftex.def Info: figures/kappa_figure.pdf  used on input line 321.
+(pdftex.def)             Requested size: 239.39438pt x 92.19029pt.
+[4 <./figures/fig_path_lengths.pdf> <./figures/kappa_figure.pdf>]
+Overfull \hbox (14.92868pt too wide) in paragraph at lines 377--390
+ [][] 
+ []
+
+[5] (paper.bbl) [6]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 145.
+e 498.
+
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 145.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.95pt on input line 167.
-LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.95pt on input line 167.
+(Font)              scaled to size 10.0pt on input line 498.
 
-[2{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
-enc}]
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 7.0pt on input line 206.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 5.0pt on input line 206.
-<figures/fig_stability_map.pdf, id=22, 542.025pt x 397.485pt>
-File: figures/fig_stability_map.pdf Graphic file (type pdf)
-<use figures/fig_stability_map.pdf>
-Package pdftex.def Info: figures/fig_stability_map.pdf  used on input line 303.
-
-(pdftex.def)             Requested size: 239.39438pt x 175.55504pt.
- [3]
-<figures/fig_trajectories.pdf, id=29, 397.485pt x 650.43pt>
-File: figures/fig_trajectories.pdf Graphic file (type pdf)
-<use figures/fig_trajectories.pdf>
-Package pdftex.def Info: figures/fig_trajectories.pdf  used on input line 348.
-(pdftex.def)             Requested size: 239.39438pt x 391.74973pt.
-
-Underfull \hbox (badness 2384) in paragraph at lines 351--351
-[]\T1/ntxtlf/m/n/10 Figure 2: |Train-ing tra-jec-to-ries in the MyHandSize--
- []
-
-[4 <./figures/fig_stability_map.pdf>]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[5] [6 <./figures/fig_trajectories.pdf>] (paper.bbl) [7
+[7{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
+enc}
 
 ] (paper.aux)
  ***********
 LaTeX2e <2026-06-01>
 L3 programming layer <2020/03/25>
  ***********
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 8975 strings out of 467509
- 143681 string characters out of 5408780
- 580627 words of memory out of 5000000
- 38065 multiletter control sequences out of 15000+600000
- 675542 words of font info for 81 fonts, out of 8000000 for 9000
+ 7306 strings out of 467509
+ 118236 string characters out of 5408780
+ 552330 words of memory out of 5000000
+ 36420 multiletter control sequences out of 15000+600000
+ 686033 words of font info for 91 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 89i,11n,117p,404b,399s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 89i,10n,117p,405b,370s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
-cmbx9.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
-onts/cm/cmex10.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/pu
-blic/amsfonts/cm/cmmi10.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts
+cmex10.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmmi10.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/p
+ublic/amsfonts/cm/cmmi5.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts
 /type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKT
 eX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/Flavi/AppData/Local/Progr
 ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/Flavi/AppData/Loc
@@ -521,16 +479,17 @@ ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/Fla
 vi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Us
 ers/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.p
 fb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
-/cmsy7.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cm/cmsy9.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/pu
-blic/amsfonts/symbols/msbm10.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/
-fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Local/Programs/MiK
-TeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/Local/Programs/Mi
-KTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/Local/Programs/M
-iKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (7 pages, 330169 bytes).
+/cmsy6.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmsy7.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/pu
+blic/amsfonts/cm/cmsy9.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/
+type1/public/amsfonts/symbols/msbm10.pfb><C:/Users/Flavi/AppData/Local/Programs
+/MiKTeX/fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Local/Prog
+rams/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/newtx/ztmri.pfb>
+Output written on paper.pdf (7 pages, 369432 bytes).
 PDF statistics:
- 242 PDF objects out of 1000 (max. 8388607)
+ 271 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
