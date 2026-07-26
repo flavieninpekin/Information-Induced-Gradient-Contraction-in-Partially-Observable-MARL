@@ -484,6 +484,41 @@ It provides three complementary signals:
 Together with $\mathcal{P}$ and $\bar{\sigma}^2$, $\kappa$ forms a diagnostic suite that can be computed from any trained checkpoint without modifying the training pipeline.
 We envision $\kappa$ serving a role analogous to the condition number in numerical analysis: a single scalar that quantifies how well the learning problem is \emph{posed} under the given information structure.
 
+\subsection{Case Study: Diagnosing a Noisy Sensor}
+
+To demonstrate $\kappa$ as a practical engineering tool, we walk through a concrete diagnosis-and-repair scenario using the continuous reveal data.
+
+\textbf{Scenario.}
+A practitioner is training PPO on 510K with hidden teammate information (0\% reveal baseline, $\kappa = 0.534$).
+To improve training, she adds a sensor that partially reveals teammate identity.
+Due to implementation noise, the sensor is only 75\% accurate: three of the four teammate-indicator bits are correct on average, but one is randomly masked per timestep.
+
+\textbf{Symptom.}
+After installing the sensor, training becomes \textit{worse}---policy updates oscillate, and the agent fails to develop a consistent strategy.
+She computes $\kappa$ to diagnose the cause:
+\[
+\kappa_{\text{before}} = 0.534 \quad \longrightarrow \quad \kappa_{\text{after}} = 0.324 \;\;(\text{39\% drop})
+\]
+The drop in $\kappa$ signals that the new sensor is \textit{increasing} gradient contraction rather than reducing it.
+The agent has learned to depend on the sensor's output, but the 25\% error rate causes destructive gradient updates when the information is wrong---pulling the policy away from its learned specialization.
+This is more damaging than having no sensor at all (0\%), where the agent commits to a single consistent strategy.
+
+\textbf{Intervention.}
+$\kappa$'s diagnosis suggests two fixes, both of which the continuous reveal reference curve supports:
+\begin{enumerate}
+\item \textbf{Remove the sensor.} If 100\% accuracy is not achievable, removing the noisy signal returns training to the 0\% baseline ($\kappa = 0.534$).
+\item \textbf{Fix the sensor.} Upgrading to fully reliable teammate identification (100\% reveal) raises $\kappa$ to $0.616$---a 90\% improvement over the noisy sensor and a 15\% improvement over the no-sensor baseline.
+\end{enumerate}
+
+\textbf{Outcome.}
+The practitioner implements Option 2 (feasible in 510K via the OBVIOUS mode).
+After the fix, $\kappa$ rises from $0.324$ to $0.616$, and training stabilizes.
+$\kappa$ served three roles: (1)~detecting that the sensor was harmful, (2)~identifying the mechanism (gradient contraction from inconsistent information), and (3)~verifying that the intervention succeeded.
+
+\textbf{Takeaway.}
+This workflow---measure $\kappa$, diagnose, intervene, remeasure---positions $\kappa$ as a debugging tool for MARL system design.
+The continuous reveal curve provides a reference against which any new observation scheme can be benchmarked before committing to full-scale training.
+
 \textbf{Limitations.}
 $\kappa$ requires two identifiable hidden configurations for comparison; continuous or unenumerable hidden variables require discretization.
 The behavioral path integral depends on feature design---our seven 510K features are interpretable but domain-specific.

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  25 JUL 2026 22:06
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  26 JUL 2026 18:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -440,17 +440,31 @@ Overfull \hbox (14.92868pt too wide) in paragraph at lines 377--390
  [][] 
  []
 
-[5] (paper.bbl) [6]
+
+Overfull \hbox (129.62096pt too wide) detected at line 423
+\OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 534
+  \OMS/cmsy/m/n/10 !  \OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/1
+0 :\OT1/cmr/m/n/10 446  \OMS/cmsy/m/n/10 !  \OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n
+/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 514  \OMS/cmsy/m/n/10 !  \OML/cmm/m/it
+/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 324  \OMS/cmsy/m
+/n/10 !  \OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m
+/n/10 616
+ []
+
+
+LaTeX Warning: Reference `fig:reveal' on page 5 undefined on input line 441.
+
+[5] [6] (paper.bbl) [7]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 498.
+e 564.
 
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 498.
+(Font)              scaled to size 10.0pt on input line 564.
 
-[7{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
+[8{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
 enc}
 
 ] (paper.aux)
@@ -458,12 +472,19 @@ enc}
 LaTeX2e <2026-06-01>
 L3 programming layer <2020/03/25>
  ***********
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
  ) 
 Here is how much of TeX's memory you used:
- 7306 strings out of 467509
- 118236 string characters out of 5408780
+ 7309 strings out of 467509
+ 118310 string characters out of 5408780
  552330 words of memory out of 5000000
- 36420 multiletter control sequences out of 15000+600000
+ 36423 multiletter control sequences out of 15000+600000
  686033 words of font info for 91 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  89i,10n,117p,405b,370s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -487,9 +508,9 @@ type1/public/amsfonts/symbols/msbm10.pfb><C:/Users/Flavi/AppData/Local/Programs
 rams/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/Local/Pro
 grams/MiKTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/Local/Pr
 ograms/MiKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (7 pages, 369432 bytes).
+Output written on paper.pdf (8 pages, 379198 bytes).
 PDF statistics:
- 271 PDF objects out of 1000 (max. 8388607)
+ 274 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
