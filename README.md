@@ -36,7 +36,7 @@ Research on how hidden relational information (teammate identity, partner roles)
 - Toy env: kappa~0 in HIDDEN reveals path integral alone is ambiguous
 
 ### Paper Status
-Targeting **AAAI-27** (deadline July 28, 2026). Paper draft and 7 figures in `paper/`. Three storylines under consideration (A: kappa as diagnostic tool, B: phenomenon & limits, C: PPO=A2C+Clip). Key gap: 510K PPO kappa values blocked by self-play infrastructure crash (NumPy 2.x + sb3-contrib incompatibility).
+Targeting **AAAI-27** (deadline July 28, 2026). Paper draft with appendix and 8 figures in `paper/`. Latest: continuous reveal experiments showing how gradient information is gradually recovered as hidden info is incrementally revealed.
 
 ### Dead Ends
 - IRL diagnostic → abandoned as trivial framing
