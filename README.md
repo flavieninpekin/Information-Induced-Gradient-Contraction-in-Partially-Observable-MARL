@@ -12,9 +12,9 @@ Research on how hidden relational information (teammate identity, partner roles)
 ### Algorithms Tested
 | Algorithm | 510K | Overcooked | Toy |
 |-----------|------|-----------|-----|
-| PPO (MaskablePPO) | 22 seeds | 16 seeds | 10 seeds |
-| A2C | 8 seeds | 8 seeds | 1 seed |
-| DQN | 8 seeds | 8 seeds | 1 seed |
+| PPO | 22 seeds (path int.) + 13 seeds (kappa SA) | 16 seeds (St/D) | 10 seeds |
+| A2C | 24 seeds (S/St/D) | 16 seeds (St/D) | 10 seeds |
+| DQN | 16 seeds (S/D) | 16 seeds (St/D, r=0) | 10 seeds |
 | SAC | 2 seeds (crashed) | — | — |
 | REINFORCE | 8 seeds | — | — |
 | MAPPO | 5 seeds (incomplete) | — | — |
