@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  27 JUL 2026 17:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  27 JUL 2026 17:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -448,38 +448,32 @@ lf/m/n/10 Let
  []
 
 [5 <./figures/kappa_figure.pdf>]
-
-LaTeX Warning: Reference `fig:reveal' on page 6 undefined on input line 465.
-
-[6] (paper.bbl [7])
+<figures/fig_reveal.pdf, id=181, 352.09476pt x 243.62267pt>
+File: figures/fig_reveal.pdf Graphic file (type pdf)
+<use figures/fig_reveal.pdf>
+Package pdftex.def Info: figures/fig_reveal.pdf  used on input line 467.
+(pdftex.def)             Requested size: 239.39438pt x 165.64262pt.
+ [6 <./figures/fig_reveal.pdf>] (paper.bbl
+[7])
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 589.
-
-(C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
+e 596.
+ (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 589.
-
-[8{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
-enc}] (paper.aux)
+(Font)              scaled to size 10.0pt on input line 596.
+ [8{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1
+.enc}] (paper.aux)
  ***********
 LaTeX2e <2026-06-01>
 L3 programming layer <2020/03/25>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 7313 strings out of 467509
- 118393 string characters out of 5408780
- 549378 words of memory out of 5000000
- 36427 multiletter control sequences out of 15000+600000
+ 7320 strings out of 467509
+ 118619 string characters out of 5408780
+ 549400 words of memory out of 5000000
+ 36434 multiletter control sequences out of 15000+600000
  686033 words of font info for 91 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  89i,10n,117p,405b,370s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -504,9 +498,9 @@ Programs/MiKTeX/fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/L
 ocal/Programs/MiKTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/
 Local/Programs/MiKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (8 pages, 391048 bytes).
+Output written on paper.pdf (8 pages, 415641 bytes).
 PDF statistics:
- 275 PDF objects out of 1000 (max. 8388607)
+ 346 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

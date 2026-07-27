@@ -92,7 +92,7 @@ We confirm this prediction: across all three environments, policy-gradient metho
 %
 We contribute:
 (1)~the \textbf{IIGC framework}, formalizing how hidden relational information erases learning signals in MARL;
-(2)~$\kappa$, a lightweight, algorithm-agnostic metric for detecting this failure before committing to full-scale training;
+(2)~$\kappa$, a lightweight, broadly computable metric for detecting this failure before committing to full-scale training;
 (3)~the \textbf{Stable-or-Stuck diagnostic}, pairing $\kappa$ with path integrals for trajectory-level diagnosis;
 and (4)~a three-environment, cross-algorithm validation establishing the framework's diagnostic scope.
 
@@ -432,13 +432,13 @@ $\kappa$ captures structural differences between algorithm families in how they 
 A practitioner can compute $\kappa$ on a small-scale version of a partially observable multi-agent task to anticipate which algorithm family's gradient structure is naturally compatible with the information regime---before committing to large-scale training.
 This cross-algorithm analysis is preliminary (SAC: 2 seeds; DQN Overcooked: failed to converge), but the pattern is systematic across both 510K and Toy measurements.
 
-\subsection{Continuous Information Reveal: A W-Shaped $\kappa$ Curve}
+\subsection{Continuous Information Reveal: A Non-Monotonic $\kappa$ Curve}
 
 We further isolate the causal effect of information availability through a \textbf{continuous reveal} intervention.
 Using the 510K OBVIOUS mode with a 4-bit teammate-indicator appended to the observation, we train PPO agents at five information levels:
 randomly masking each indicator bit with probability $p \in \{0, 0.25, 0.5, 0.75, 1.0\}$ during training (2 seeds per level, $10^6$ steps each).
 
-The resulting $\kappa$ values form a striking \textbf{W-shaped curve}:
+The resulting $\kappa$ values form a striking \textbf{non-monotonic curve}:
 \[
 \begin{aligned}
 \kappa_{0\%} &= 0.534 \;\to\; \kappa_{25\%} = 0.446 \;\to\; \kappa_{50\%} = 0.514 \\
@@ -462,7 +462,14 @@ This is more damaging than the 50\% regime, where the agent cannot develop a con
 $\kappa_{100\%} = 0.616$ exceeds all partial-information conditions, confirming that complete, consistent information eliminates gradient contraction.
 \end{enumerate}
 
-Figure~\ref{fig:reveal} visualizes this W-shaped relationship.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_reveal.pdf}
+\caption{Continuous reveal $\kappa$ curve on 510K (PPO, 2 seeds/point, $10^6$ steps). The relationship is non-monotonic: 75\% reveal is the global minimum ($\kappa=0.324$, 39\% below baseline).}
+\label{fig:reveal}
+\end{figure}
+
+Figure~\ref{fig:reveal} visualizes this non-monotonic relationship.
 This finding has practical significance for MARL system design: \textit{incrementally improving an agent's information access can worsen training before improving it}.
 $\kappa$ detects this regime, providing a diagnostic against premature or noisy information disclosure.
 
@@ -500,17 +507,17 @@ The intermediate case---510K \textsc{Dynamic}---falls between: residual $\kappa$
 The conventional interpretation (short path $=$ stable convergence) fails in the low-$\kappa$ regime.
 
 \textbf{$\kappa$ as a practical diagnostic.}
-$\kappa$ is lightweight, post-hoc, and algorithm-agnostic.
+$\kappa$ is lightweight, post-hoc, and broadly computable across algorithm families (though its interpretation depends on gradient structure, as shown in Section~\ref{sec:cross}).
 It provides three complementary signals:
 (1)~\textbf{direction}: $\kappa_R > \kappa_H$ indicates IIGC from hidden information;
 (2)~\textbf{magnitude}: $\kappa \to 0$ signals near-complete gradient cancellation;
 (3)~\textbf{stability}: high $\kappa$ variance ($\sigma > 0.2$) predicts convergence failure.
 Together with $\mathcal{P}$, $\kappa$ forms a diagnostic suite computable from any trained checkpoint without modifying the training pipeline.
-We envision a practical workflow: a practitioner trains an agent for a small number of steps (roughly $10\%$ of a full run), measures $\kappa$, and decides whether to proceed, adjust the observation scheme, or switch algorithms---avoiding wasted GPU hours on configurations where gradient cancellation precludes effective learning.
+We envision a practical workflow: a practitioner trains an agent for a small number of steps (roughly $10\%$ of a full run), measures $\kappa$, and decides whether to proceed, adjust the observation scheme, or switch algorithms---potentially reducing unnecessary computation on configurations where gradient cancellation precludes effective learning.
 
 \subsection{Case Study: Diagnosing a Noisy Sensor}
 
-To demonstrate $\kappa$ as a practical engineering tool, we walk through a concrete diagnosis-and-repair scenario using the continuous reveal data.
+As an illustrative workflow demonstrating $\kappa$'s diagnostic logic, we walk through a diagnosis-and-repair scenario using the continuous reveal data.
 
 \textbf{Scenario.}
 A practitioner is training PPO on 510K with hidden teammate information (0\% reveal baseline, $\kappa = 0.534$).
@@ -540,7 +547,7 @@ After the fix, $\kappa$ rises from $0.324$ to $0.616$, and training stabilizes.
 $\kappa$ served three roles: (1)~detecting that the sensor was harmful, (2)~identifying the mechanism (gradient contraction from inconsistent information), and (3)~verifying that the intervention succeeded.
 
 \textbf{Takeaway.}
-This workflow---measure $\kappa$, diagnose, intervene, remeasure---positions $\kappa$ as a debugging tool for MARL system design.
+This workflow---measure $\kappa$, diagnose, intervene, remeasure---illustrates how $\kappa$ can serve as a debugging tool for MARL system design.
 The continuous reveal curve provides a reference against which any new observation scheme can be benchmarked before committing to full-scale training.
 
 \textbf{Limitations.}
