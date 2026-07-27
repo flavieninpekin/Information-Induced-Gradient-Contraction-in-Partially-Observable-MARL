@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  26 JUL 2026 18:06
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  27 JUL 2026 16:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -410,59 +410,58 @@ LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
 (Font)              scaled to size 10.95pt on input line 129.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
 (Font)              scaled to size 10.95pt on input line 129.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 7.0pt on input line 146.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 5.0pt on input line 146.
 [2]
-Overfull \hbox (11.82707pt too wide) in paragraph at lines 250--262
+Overfull \hbox (11.82707pt too wide) in paragraph at lines 252--264
  [][] 
  []
 
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 7.0pt on input line 267.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 5.0pt on input line 267.
-[3]
-<figures/fig_path_lengths.pdf, id=27, 505.89pt x 289.08pt>
+
+Underfull \vbox (badness 1668) has occurred while \output is active []
+
+ [3]
+<figures/fig_path_lengths.pdf, id=27, 372.66008pt x 244.34976pt>
 File: figures/fig_path_lengths.pdf Graphic file (type pdf)
 <use figures/fig_path_lengths.pdf>
-Package pdftex.def Info: figures/fig_path_lengths.pdf  used on input line 281.
-(pdftex.def)             Requested size: 239.39438pt x 136.79832pt.
+Package pdftex.def Info: figures/fig_path_lengths.pdf  used on input line 283.
+(pdftex.def)             Requested size: 239.39438pt x 156.96867pt.
 
-Overfull \hbox (8.5667pt too wide) in paragraph at lines 298--308
+Overfull \hbox (8.5667pt too wide) in paragraph at lines 300--310
  [][] 
  []
 
-<figures/kappa_figure.pdf, id=28, 931.96619pt x 358.9045pt>
+<figures/kappa_figure.pdf, id=28, 360.0765pt x 243.62267pt>
 File: figures/kappa_figure.pdf Graphic file (type pdf)
 <use figures/kappa_figure.pdf>
-Package pdftex.def Info: figures/kappa_figure.pdf  used on input line 321.
-(pdftex.def)             Requested size: 239.39438pt x 92.19029pt.
+Package pdftex.def Info: figures/kappa_figure.pdf  used on input line 323.
+(pdftex.def)             Requested size: 239.39438pt x 161.97357pt.
 [4 <./figures/fig_path_lengths.pdf> <./figures/kappa_figure.pdf>]
-Overfull \hbox (14.92868pt too wide) in paragraph at lines 377--390
+Overfull \hbox (14.92868pt too wide) in paragraph at lines 379--392
  [][] 
  []
 
 
-Overfull \hbox (129.62096pt too wide) detected at line 423
-\OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 534
-  \OMS/cmsy/m/n/10 !  \OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/1
-0 :\OT1/cmr/m/n/10 446  \OMS/cmsy/m/n/10 !  \OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n
-/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 514  \OMS/cmsy/m/n/10 !  \OML/cmm/m/it
-/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 324  \OMS/cmsy/m
-/n/10 !  \OML/cmm/m/it/10 ^^T[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m
-/n/10 616
+Underfull \hbox (badness 1303) in paragraph at lines 402--406
+\T1/ntxtlf/b/n/10 Proposition 3 (Gra-di-ent Struc-ture Dis-tinc-tion). \T1/ntxt
+lf/m/n/10 Let
  []
 
+[5]
 
-LaTeX Warning: Reference `fig:reveal' on page 5 undefined on input line 441.
+LaTeX Warning: Reference `fig:reveal' on page 6 undefined on input line 455.
 
-[5] [6] (paper.bbl) [7]
+[6] (paper.bbl) [7]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 564.
+e 578.
 
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 564.
+(Font)              scaled to size 10.0pt on input line 578.
 
 [8{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
 enc}
@@ -476,15 +475,12 @@ L3 programming layer <2020/03/25>
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 7309 strings out of 467509
- 118310 string characters out of 5408780
- 552330 words of memory out of 5000000
- 36423 multiletter control sequences out of 15000+600000
+ 7313 strings out of 467509
+ 118393 string characters out of 5408780
+ 551378 words of memory out of 5000000
+ 36427 multiletter control sequences out of 15000+600000
  686033 words of font info for 91 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  89i,10n,117p,405b,370s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -500,17 +496,18 @@ ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/Fla
 vi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Us
 ers/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.p
 fb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
-/cmsy6.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cm/cmsy7.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/pu
-blic/amsfonts/cm/cmsy9.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/amsfonts/symbols/msbm10.pfb><C:/Users/Flavi/AppData/Local/Programs
-/MiKTeX/fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Local/Prog
-rams/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/Local/Pro
-grams/MiKTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/Local/Pr
-ograms/MiKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (8 pages, 379198 bytes).
+/cmsy5.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmsy6.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/type1/pu
+blic/amsfonts/cm/cmsy7.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/
+type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/Flavi/AppData/Local/Programs/MiKTe
+X/fonts/type1/public/amsfonts/symbols/msbm10.pfb><C:/Users/Flavi/AppData/Local/
+Programs/MiKTeX/fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Lo
+cal/Programs/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/L
+ocal/Programs/MiKTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/
+Local/Programs/MiKTeX/fonts/type1/public/newtx/ztmri.pfb>
+Output written on paper.pdf (8 pages, 390113 bytes).
 PDF statistics:
- 274 PDF objects out of 1000 (max. 8388607)
+ 275 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
