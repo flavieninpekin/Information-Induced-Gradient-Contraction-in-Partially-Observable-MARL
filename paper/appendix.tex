@@ -1,0 +1,168 @@
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2027}
+\usepackage{amsmath,amssymb,booktabs,graphicx}
+
+\title{Supplementary Material: 510K Game Rules, Feature Definitions, and Extended Data}
+\author{Anonymous Submission}
+
+\begin{document}
+\maketitle
+
+\section{510K Game Rules}
+
+510K is a four-player trick-taking game with a standard 52-card deck.
+Cards 5, 10, K carry point values (5, 10, 10).
+The lead player sets the pattern (single, pair, straight, bomb, 510K pattern, etc.); others must follow with a higher-rank play or pass.
+The trick winner collects all 5/10/K points from the trick.
+
+Four modes share identical card mechanics but differ in team structure and termination:
+
+\begin{itemize}
+\item \textsc{Single}: solo-competitive. Game ends when first player empties hand. Winner $+30$, losers $-10$ each.
+\item \textsc{Static}: fixed teams (players 0\&2 vs.\ 1\&3). Game ends when both members of one team finish. Winners $+15$, losers $-15$ each.
+\item \textsc{Dynamic}: teams by hidden red-Ace distribution (holders of A$\heartsuit$/A$\diamondsuit$ form one team). Scoring same as \textsc{Static}. Red A is the strongest single card; red-A pair is the strongest bomb pattern.
+\item \textsc{Obvious}: identical card mechanics to \textsc{Dynamic}, but team membership is observable as a 4-bit teammate indicator. This ablation isolates the effect of information structure while holding card hierarchy constant.
+\end{itemize}
+
+\section{Behavioral Features for Path Integral}
+
+Seven mode-independent features ($\phi_1$--$\phi_7$), all with VIF $< 2$ (no multicollinearity):
+
+\begin{itemize}
+\item $\phi_1$ \textbf{MyScore}: cumulative 510K points scored by the agent, normalized by 150.
+\item $\phi_2$ \textbf{MyHandSize}: fraction of hand already played, $(13 - |h|)/13$.
+\item $\phi_3$ \textbf{MyStrength}: average card rank in hand, mapped to $[0,1]$.
+\item $\phi_4$ \textbf{TrickScore}: 5/10/K points at stake in the current trick, normalized by 100.
+\item $\phi_5$ \textbf{PassCount}: consecutive passes in the current trick, normalized by number of active players.
+\item $\phi_6$ \textbf{ScoreSpread}: standard deviation of 510K scores across all players, normalized by 50. (Cooperative feature; measures score inequality.)
+\item $\phi_7$ \textbf{SuppressionGap}: when following a trick, rank gap between the player's strongest card and the leader's best card, normalized by 12. $0$ when leading. (Cooperative feature; measures competitive pressure.)
+\end{itemize}
+
+\textbf{Feature ablation.}
+Deleting any single feature ($\phi_1$--$\phi_7$) preserves the monotonic path-length ordering $\textsc{Single} > \textsc{Static} > \textsc{Dynamic}$ (7/7 subsets), confirming the finding is not an artifact of feature selection.
+
+\section{OBVIOUS Mode Construction}
+
+The \textsc{Obvious} observation vector is 116-dimensional (112 base features + 4 teammate-indicator bits).
+Bit $i = 1$ if player $i$ is on the observing agent's team (according to the red-Ace distribution).
+This is the only structural difference from \textsc{Dynamic} (112-dim observation), enabling a clean ablation: any difference between DYNAMIC and OBVIOUS is attributable to \textit{team information visibility}, not to card mechanics.
+
+\section{Path Integral Full Data}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Policy (seed) & Path Length & Endpoint Dist. & Curvature \\
+\midrule
+SINGLE (41)   & 0.340 & 0.046 & 7.3$\times$ \\
+SINGLE (51)   & 0.482 & 0.068 & 7.1$\times$ \\
+SINGLE (52)   & 0.561 & 0.034 & 16.6$\times$ \\
+SINGLE (53)   & 0.454 & 0.108 & 4.2$\times$ \\
+SINGLE (54)   & 0.443 & 0.051 & 8.8$\times$ \\
+STATIC (41)   & 0.253 & 0.071 & 3.6$\times$ \\
+STATIC (61)   & 0.342 & 0.086 & 4.0$\times$ \\
+STATIC (62)   & 0.490 & 0.073 & 6.7$\times$ \\
+STATIC (63)   & 0.281 & 0.048 & 5.9$\times$ \\
+STATIC (64)   & 0.278 & 0.021 & 13.5$\times$ \\
+DYNAMIC (41)  & 0.299 & 0.046 & 6.5$\times$ \\
+DYNAMIC (42)  & 0.231 & 0.112 & 2.1$\times$ \\
+DYNAMIC (43)  & 0.367 & 0.026 & 14.3$\times$ \\
+DYNAMIC (44)  & 0.274 & 0.031 & 8.9$\times$ \\
+OBVIOUS (71)  & 0.203 & 0.100 & 2.0$\times$ \\
+OBVIOUS (72)  & 0.355 & 0.122 & 2.9$\times$ \\
+OBVIOUS (73)  & 0.366 & 0.051 & 7.2$\times$ \\
+OBVIOUS (74)  & 0.302 & 0.022 & 13.6$\times$ \\
+OBVIOUS (75)  & 0.318 & 0.036 & 8.9$\times$ \\
+OBVIOUS (76)  & 0.391 & 0.085 & 4.6$\times$ \\
+OBVIOUS (77)  & 0.283 & 0.043 & 6.6$\times$ \\
+OBVIOUS (78)  & 0.404 & 0.035 & 11.5$\times$ \\
+\bottomrule
+\end{tabular}
+\caption{Full path integral data for all 22 seeds across 4 modes.}
+\end{table}
+
+\section{Extended $\kappa$ Data}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lllll}
+\toprule
+Env & Algo & Mode & $\kappa$ (mean $\pm$ std) & $n$ \\
+\midrule
+Toy      & PPO & HIDDEN   & $0.039 \pm 0.073$ & 10 \\
+Toy      & PPO & REVEALED & $0.726 \pm 0.100$ & 10 \\
+Toy      & A2C & HIDDEN   & $0.195 \pm 0.352$ & 10 \\
+Toy      & A2C & REVEALED & $0.842 \pm 0.025$ & 10 \\
+510K     & A2C & SINGLE   & $0.644 \pm 0.201$ & 8 \\
+510K     & A2C & STATIC   & $0.500 \pm 0.000$ & 8 \\
+510K     & A2C & DYNAMIC  & $0.519 \pm 0.060$ & 8 \\
+510K     & DQN & SINGLE   & $0.797 \pm 0.123$ & 8 \\
+510K     & DQN & DYNAMIC  & $0.917 \pm 0.064$ & 8 \\
+510K     & SAC & SINGLE   & $0.504 \pm 0.038$ & 2 \\
+510K     & SAC & DYNAMIC  & $0.540 \pm 0.069$ & 2 \\
+510K     & PPO & SINGLE   & $0.569$           & 1 \\
+510K     & PPO & DYNAMIC  & $0.444 \pm 0.069$ & 9 \\
+510K     & REINFORCE & SINGLE  & $0.487 \pm 0.312$ & 8 \\
+510K     & REINFORCE & DYNAMIC & $0.605 \pm 0.238$ & 8 \\
+Overcooked & PPO & STATIC  & $0.500 \pm 0.006$ & 8 \\
+Overcooked & PPO & DYNAMIC & $0.000 \pm 0.000$ & 8 \\
+Overcooked & A2C & STATIC  & $0.500 \pm 0.000$ & 8 \\
+Overcooked & A2C & DYNAMIC & $0.125 \pm 0.217$ & 8 \\
+Overcooked & DQN & STATIC  & $0.473 \pm 0.093$ & 8 \\
+Overcooked & DQN & DYNAMIC & $0.645 \pm 0.209$ & 8 \\
+\bottomrule
+\end{tabular}
+\caption{Complete $\kappa$ dataset across all environments, algorithms, and modes.}
+\end{table}
+
+\section{Continuous Reveal Full Data}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Reveal Fraction & $\kappa$ (mean $\pm$ std) & $n$ \\
+\midrule
+0\%   & $0.534 \pm 0.038$ & 2 \\
+25\%  & $0.446 \pm 0.085$ & 2 \\
+50\%  & $0.514 \pm 0.024$ & 2 \\
+75\%  & $0.324 \pm 0.079$ & 2 \\
+100\% & $0.616 \pm 0.039$ & 2 \\
+\bottomrule
+\end{tabular}
+\caption{Continuous reveal $\kappa$ values at five information levels (510K, PPO).}
+\end{table}
+
+\section{Training Hyperparameters}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Parameter & Value \\
+\midrule
+Learning rate     & $3 \times 10^{-4}$ \\
+PPO n\_steps      & 2048 (self-play) / 256 (parallel) \\
+Batch size        & 64 / 256 \\
+Epochs per update & 10 \\
+$\gamma$ (discount) & 0.99 \\
+GAE $\lambda$     & 0.95 \\
+Clip range        & 0.2 \\
+Entropy coeff.    & 0.01 \\
+Network           & MLP, [256, 256], tanh \\
+A2C n\_steps      & 256 \\
+DQN buffer        & 50,000 \\
+DQN learning starts & 5,000 \\
+DQN $\tau$        & 0.005 \\
+DQN exploration   & $\epsilon: 1.0 \to 0.02$ over 30\% of training \\
+\bottomrule
+\end{tabular}
+\caption{Training hyperparameters.}
+\end{table}
+
+\end{document}

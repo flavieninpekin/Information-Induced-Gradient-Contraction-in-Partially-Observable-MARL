@@ -1,100 +1,95 @@
-"""Generate kappa comparison figure."""
+"""Generate paper figures: path lengths + continuous reveal."""
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
-
-# Panel A: PG methods on Toy
-envs = ['Toy', '510K', 'Overcooked']
-algos = ['PPO', 'A2C']
-# (revealed_k, hidden_k, revealed_std, hidden_std)
-pg_data = {
-    ('Toy', 'PPO'): (0.746, 0.049, 0.100, 0.078),
-    ('Toy', 'A2C'): (0.839, 0.243, 0.025, 0.378),
-    ('510K', 'PPO'): (0.569, 0.386, 0.000, 0.025),
-    ('510K', 'A2C'): (0.644, 0.519, 0.201, 0.060),
-    ('Overcooked', 'PPO'): (0.497, 0.000, 0.006, 0.000),
-}
-colors_pg = {'PPO': '#2196F3', 'A2C': '#4CAF50'}
-
-x = np.arange(len(envs))
-w = 0.25
-
-for i, algo in enumerate(algos):
-    rv, hv, rs, hs = [], [], [], []
-    for env in envs:
-        if (env, algo) in pg_data:
-            d = pg_data[(env, algo)]
-            rv.append(d[0]); hv.append(d[1]); rs.append(d[2]); hs.append(d[3])
-        else:
-            rv.append(0); hv.append(0); rs.append(0); hs.append(0)
-
-    offset = (i - 0.5) * w
-    ax1.bar(x + offset - w*0.2, rv, w*0.4, yerr=rs, color=colors_pg[algo], alpha=0.9,
-            label=f'{algo} Revealed' if i == 0 else '')
-    ax1.bar(x + offset + w*0.2, hv, w*0.4, yerr=hs, color=colors_pg[algo], alpha=0.3,
-            label=f'{algo} Hidden' if i == 0 else '', hatch='///')
-
-ax1.set_xticks(x)
-ax1.set_xticklabels(envs, fontsize=11)
-ax1.set_ylabel(r'$\kappa$', fontsize=13)
-ax1.set_title('Policy-Gradient Methods\n' + r'$\kappa_\mathrm{revealed} > \kappa_\mathrm{hidden}$', fontsize=11)
-ax1.legend(fontsize=8, loc='upper right')
-ax1.set_ylim(0, 1.05)
-ax1.axhline(y=0.5, color='gray', linestyle='--', alpha=0.3)
-
-# Panel B: Cross-family comparison
-comparisons = [
-    ("PPO\n(Toy)", 0.746, 0.049, 0.100, 0.078, '#2196F3', 'PG'),
-    ("A2C\n(510K)", 0.644, 0.519, 0.201, 0.060, '#4CAF50', 'PG'),
-    ("PPO\n(Overcooked)", 0.497, 0.000, 0.006, 0.000, '#1565C0', 'PG'),
-    ("DQN\n(510K)", 0.797, 0.917, 0.123, 0.063, '#FF5722', 'Value'),
-    ("SAC\n(510K)", 0.504, 0.540, 0.038, 0.069, '#9C27B0', 'AC'),
-    ("REINFORCE\n(510K)", 0.487, 0.605, 0.312, 0.238, '#795548', 'PG-v'),
-]
-
-labels = [c[0] for c in comparisons]
-x = np.arange(len(labels))
-
-for i, (label, rk, hk, rs, hs, color, fam) in enumerate(comparisons):
-    ax2.bar(i - 0.18, rk, 0.33, color=color, alpha=0.9)
-    ax2.bar(i + 0.18, hk, 0.33, color=color, alpha=0.25, hatch='///')
-
-# Legend
-from matplotlib.patches import Patch
-legend_elements = [
-    Patch(facecolor='gray', alpha=0.9, label='Revealed/Static'),
-    Patch(facecolor='gray', alpha=0.25, hatch='///', label='Hidden/Dynamic'),
-]
-ax2.legend(handles=legend_elements, fontsize=8, loc='upper right')
-
-# Family labels
-for i, (label, rk, hk, rs, hs, color, fam) in enumerate(comparisons):
-    if fam == 'PG':
-        ax2.text(i, 1.02, 'PG', ha='center', fontsize=7, fontweight='bold', color='#1565C0')
-    elif fam == 'Value':
-        ax2.text(i, 1.02, 'Value', ha='center', fontsize=7, fontweight='bold', color='#E65100')
-    elif fam == 'AC':
-        ax2.text(i, 1.02, 'AC', ha='center', fontsize=7, fontweight='bold', color='#7B1FA2')
-    elif fam == 'PG-v':
-        ax2.text(i, 1.02, 'PG-v', ha='center', fontsize=7, fontweight='bold', color='#5D4037')
-
-ax2.set_xticks(x)
-ax2.set_xticklabels(labels, fontsize=8)
-ax2.set_ylabel(r'$\kappa$', fontsize=13)
-ax2.set_title('Cross-Family Comparison', fontsize=11)
-ax2.set_ylim(0, 1.15)
-ax2.axhline(y=0.5, color='gray', linestyle='--', alpha=0.3)
-
-fig.suptitle(r'$\kappa$: Diagnosing Gradient Contraction from Hidden Information',
-             fontsize=13, fontweight='bold')
-fig.tight_layout()
-
 out_dir = os.path.join(os.path.dirname(__file__), '..', 'paper', 'figures')
 os.makedirs(out_dir, exist_ok=True)
-fig.savefig(os.path.join(out_dir, 'kappa_figure.pdf'), dpi=200, bbox_inches='tight')
-fig.savefig(os.path.join(out_dir, 'kappa_figure.png'), dpi=200, bbox_inches='tight')
-print('Figure saved to paper/figures/kappa_figure.{pdf,png}')
 
+# ======== Figure 1: Path Lengths across 510K modes ========
+fig, ax = plt.subplots(figsize=(6, 3.5))
+
+modes = ['SINGLE', 'STATIC', 'OBVIOUS', 'DYNAMIC']
+means = [0.456, 0.329, 0.328, 0.293]
+stds  = [0.071, 0.086, 0.062, 0.049]
+n_seeds = [5, 5, 8, 4]
+colors = ['#1565C0', '#4CAF50', '#FF9800', '#F44336']
+
+x = np.arange(len(modes))
+bars = ax.bar(x, means, yerr=stds, color=colors, capsize=6, edgecolor='white', linewidth=0.8)
+
+for i, (m, s, n) in enumerate(zip(means, stds, n_seeds)):
+    ax.text(i, m + s + 0.015, f'{m:.3f}', ha='center', fontsize=8, fontweight='bold')
+    ax.text(i, m - s - 0.025, f'n={n}', ha='center', fontsize=7, color='gray')
+
+ax.set_xticks(x)
+ax.set_xticklabels(modes, fontsize=11)
+ax.set_ylabel('Path Integral $\\mathcal{P}$', fontsize=12)
+ax.set_title('Training Trajectory Length by Cooperation Mode (510K)', fontsize=12, fontweight='bold')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.set_ylim(0, 0.58)
+
+# Add OBVIOUS annotation
+ax.annotate('OBVIOUS = DYNAMIC rules\n+ visible teams\n\nMatches STATIC (\u0394=0.001)\n\u2192 Team info is causal driver',
+            xy=(2, 0.328), xytext=(2.8, 0.48),
+            arrowprops=dict(arrowstyle='->', color='gray', lw=1.2),
+            fontsize=8, color='#E65100', bbox=dict(boxstyle='round,pad=0.3', facecolor='#FFF3E0', alpha=0.8))
+
+fig.tight_layout()
+fig.savefig(os.path.join(out_dir, 'fig_path_lengths.pdf'), dpi=200, bbox_inches='tight')
+fig.savefig(os.path.join(out_dir, 'fig_path_lengths.png'), dpi=200, bbox_inches='tight')
+plt.close()
+print('Saved fig_path_lengths.pdf')
+
+# ======== Figure 2: Continuous Reveal W-Curve ========
+fig, ax = plt.subplots(figsize=(6, 3.2))
+
+reveal = [0.0, 0.25, 0.50, 0.75, 1.0]
+kappas = [0.5342, 0.4455, 0.5144, 0.3242, 0.6159]
+kstd   = [0.0376, 0.0847, 0.0238, 0.0786, 0.0387]
+
+ax.errorbar(reveal, kappas, yerr=kstd, marker='o', markersize=10, linewidth=2.5,
+            color='#1565C0', capsize=6, markerfacecolor='white', markeredgewidth=2.5)
+
+# Key annotations
+ax.annotate('"No info is better\nthan noisy info"',
+            xy=(0.25, 0.446), xytext=(0.08, 0.35),
+            arrowprops=dict(arrowstyle='->', color='#E65100', lw=1.2),
+            fontsize=9, color='#E65100', fontweight='bold', ha='center',
+            bbox=dict(boxstyle='round,pad=0.3', facecolor='#FFF3E0', alpha=0.8))
+
+ax.annotate('Maximum penalty:\n"Almost right" is\nmost dangerous',
+            xy=(0.75, 0.324), xytext=(0.92, 0.22),
+            arrowprops=dict(arrowstyle='->', color='#C62828', lw=1.2),
+            fontsize=9, color='#C62828', fontweight='bold', ha='center',
+            bbox=dict(boxstyle='round,pad=0.3', facecolor='#FFEBEE', alpha=0.8))
+
+ax.annotate('Best: full,\nconsistent info',
+            xy=(1.0, 0.616), xytext=(0.85, 0.75),
+            arrowprops=dict(arrowstyle='->', color='#2E7D32', lw=1.2),
+            fontsize=9, color='#2E7D32', fontweight='bold', ha='center',
+            bbox=dict(boxstyle='round,pad=0.3', facecolor='#E8F5E9', alpha=0.8))
+
+ax.set_xlabel('Team Information Revealed (fraction)', fontsize=12)
+ax.set_ylabel('$\\kappa$', fontsize=14)
+ax.set_title('Continuous Information Reveal (510K, PPO)', fontsize=12, fontweight='bold')
+ax.set_xticks(reveal)
+ax.set_xticklabels([f'{int(r*100)}%' for r in reveal], fontsize=11)
+ax.set_ylim(0.15, 0.75)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.grid(axis='y', alpha=0.2)
+
+# Baseline line
+ax.axhline(y=0.534, color='gray', linestyle='--', alpha=0.4, linewidth=1)
+ax.text(0.02, 0.538, '0% baseline', fontsize=8, color='gray')
+
+fig.tight_layout()
+fig.savefig(os.path.join(out_dir, 'fig_reveal.pdf'), dpi=200, bbox_inches='tight')
+fig.savefig(os.path.join(out_dir, 'fig_reveal.png'), dpi=200, bbox_inches='tight')
+plt.close()
+print('Saved fig_reveal.pdf')
+
+print('\nAll figures in paper/figures/')
