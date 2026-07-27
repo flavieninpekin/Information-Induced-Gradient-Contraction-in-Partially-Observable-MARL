@@ -35,9 +35,9 @@ We validate this framework across three multi-agent environments of increasing c
 In 510K, a four-player card game with configurable cooperation structures, 22 independent PPO training runs reveal that the hidden-relation regime produces the \emph{shortest} behavioral trajectories ($0.293 \pm 0.049$), while revealing the same relations yields longer paths ($0.328 \pm 0.062$)---a pattern consistent with IIGC.
 A visible-team ablation ($n=8$) isolates \textbf{known-team information} as the causal driver ($\Delta = 0.001$ vs.\ identical-card-mechanics baseline).
 A synthetic toy problem exposes the extreme case: $\kappa \approx 0$, a wandering learning path ($0.48$), and chance-level return---the path integral and $\kappa$ give opposite diagnoses.
-In Overcooked with configurable partner roles, $\kappa$ correctly identifies gradient death ($\kappa = 0.000$) under hidden partner identities across all eight seeds, while the path integral alone would be ambiguous.
+In Overcooked with configurable partner roles, $\kappa$ identifies gradient death ($\kappa = 0.000$) under hidden partner identities across all eight seeds, while the path integral alone would be ambiguous.
 Cross-algorithm $\kappa$ measurements reveal systematic signatures distinguishing policy-gradient, value-based, and actor-critic methods.
-We recommend $\kappa$ as a lightweight, post-hoc diagnostic for MARL practitioners deploying agents in environments with hidden relational information.
+We recommend $\kappa$ as a lightweight pre-training diagnostic: before committing resources to large-scale training, a practitioner can measure $\kappa$ on a small pilot to determine whether the information structure of the problem permits gradient-based learning at all.
 \end{abstract}
 
 
@@ -80,19 +80,20 @@ The policy moves little, not because it has converged, but because the learning 
 
 We introduce the \textbf{Relational Gradient Retention Ratio}, $\kappa$, to quantify this effect.
 $\kappa$ measures the alignment of REINFORCE gradients computed from rollouts under two distinct hidden configurations ($\kappa = 1$: gradients aligned; $\kappa \to 0$: gradients cancel).
-Coupled with the path integral and a drift-diffusion analysis of training trajectories, $\kappa$ yields a \textbf{Stable-or-Stuck diagnostic}: a two-dimensional test that separates four regimes---stable convergence, productive exploration, information-induced stagnation, and aimless noise---using only trained policies and rollout access.
+Coupled with the path integral $\mathcal{P}$, $\kappa$ yields a \textbf{Stable-or-Stuck diagnostic}: a two-dimensional test that separates four training regimes---stable convergence, productive exploration, information-induced stagnation, and aimless drift---using only trained policies and rollout access.
 
 We validate this framework across three environments of increasing complexity (Toy, Overcooked, 510K) and four algorithm families (PPO, A2C, DQN, SAC).
 In Toy, $\kappa$ cleanly separates the zero-gradient regime ($\kappa_{\rm HIDDEN}=0.039$) from aligned learning ($\kappa_{\rm REVEALED}=0.726$).
-In Overcooked with hidden partner roles, $\kappa$ correctly registers gradient death ($\kappa=0.000$ across eight seeds), while visible roles permit stable learning ($\kappa=0.500$, reward $187$).
+In Overcooked with hidden partner roles, $\kappa$ registers gradient death ($\kappa=0.000$ across eight seeds), while visible roles permit stable learning ($\kappa=0.500$, reward $187$).
 In 510K, $\kappa$ reveals a moderate but consistent contraction effect under hidden teams.
 %
-Cross-algorithm measurements expose algorithm-specific $\kappa$ signatures: policy-gradient methods (PPO, A2C) show $\kappa_{\rm revealed} > \kappa_{\rm hidden}$; value-based and actor-critic methods (DQN, SAC) show the reverse pattern.
+The IIGC framework predicts that policy-gradient methods are uniquely vulnerable to gradient cancellation, while value-based methods should resist it due to their distinct gradient structure.
+We confirm this prediction: across all three environments, policy-gradient methods (PPO, A2C) show $\kappa_{\rm revealed} > \kappa_{\rm hidden}$, while value-based and actor-critic methods (DQN, SAC) show the reverse.
 %
 We contribute:
 (1)~the \textbf{IIGC framework}, formalizing how hidden relational information erases learning signals in MARL;
-(2)~$\kappa$, a lightweight, algorithm-agnostic metric for quantifying this effect;
-(3)~the \textbf{Stable-or-Stuck diagnostic}, pairing $\kappa$ with path integrals and drift-diffusion analysis for trajectory-level diagnosis;
+(2)~$\kappa$, a lightweight, algorithm-agnostic metric for detecting this failure before committing to full-scale training;
+(3)~the \textbf{Stable-or-Stuck diagnostic}, pairing $\kappa$ with path integrals for trajectory-level diagnosis;
 and (4)~a three-environment, cross-algorithm validation establishing the framework's diagnostic scope.
 
 
@@ -165,6 +166,15 @@ We define the \textbf{Relational Gradient Retention Ratio}:
 \kappa = \frac{\lVert (g_A + g_B)/2 \rVert^2}{(\lVert g_A \rVert^2 + \lVert g_B \rVert^2)/2}
 \label{eq:kappa}
 \end{equation}
+
+\medskip
+\noindent\textbf{Design Motivation.}
+A diagnostic for gradient cancellation should satisfy several natural desiderata:
+(i)~it attains its maximum when $g_A$ and $g_B$ are perfectly aligned, indicating full gradient retention;
+(ii)~it approaches zero when $g_A \approx -g_B$, signaling complete cancellation;
+(iii)~it is invariant to the overall scale of the gradients, so that the diagnostic does not conflate large magnitudes with alignment;
+(iv)~it admits an additive decomposition into retained and canceled energy components, yielding a physically interpretable structure.
+The quantity $\kappa$ defined above satisfies all four requirements and is, up to a monotonic transformation, the simplest such measure.
 
 \medskip
 \noindent\textbf{Proposition 1 (Pythagorean Decomposition).}
@@ -489,14 +499,14 @@ It lies when $\kappa$ is low: Overcooked \textsc{Dynamic} registers zero gradien
 The intermediate case---510K \textsc{Dynamic}---falls between: residual $\kappa$ enables partial convergence, but the short path overstates the policy's competence.
 The conventional interpretation (short path $=$ stable convergence) fails in the low-$\kappa$ regime.
 
-\textbf{$\kappa$ as a general-purpose diagnostic.}
+\textbf{$\kappa$ as a practical diagnostic.}
 $\kappa$ is lightweight, post-hoc, and algorithm-agnostic.
 It provides three complementary signals:
 (1)~\textbf{direction}: $\kappa_R > \kappa_H$ indicates IIGC from hidden information;
 (2)~\textbf{magnitude}: $\kappa \to 0$ signals near-complete gradient cancellation;
 (3)~\textbf{stability}: high $\kappa$ variance ($\sigma > 0.2$) predicts convergence failure.
-Together with $\mathcal{P}$ and $\bar{\sigma}^2$, $\kappa$ forms a diagnostic suite that can be computed from any trained checkpoint without modifying the training pipeline.
-We envision $\kappa$ serving a role analogous to the condition number in numerical analysis: a single scalar that quantifies how well the learning problem is \emph{posed} under the given information structure.
+Together with $\mathcal{P}$, $\kappa$ forms a diagnostic suite computable from any trained checkpoint without modifying the training pipeline.
+We envision a practical workflow: a practitioner trains an agent for a small number of steps (roughly $10\%$ of a full run), measures $\kappa$, and decides whether to proceed, adjust the observation scheme, or switch algorithms---avoiding wasted GPU hours on configurations where gradient cancellation precludes effective learning.
 
 \subsection{Case Study: Diagnosing a Noisy Sensor}
 
@@ -556,8 +566,9 @@ Together with the path integral, $\kappa$ provides a Stable-or-Stuck diagnostic 
 Three environments validate the framework:
 510K reveals the deceptive pattern that motivates it (hidden relations $\rightarrow$ shorter paths);
 Toy exposes its diagnostic necessity (hidden relations $\rightarrow$ wandering paths with zero learning);
-Overcooked demonstrates its power in a realistic setting (hidden partner roles $\rightarrow$ $\kappa=0.000$ across eight seeds).
-Cross-algorithm measurements reveal systematic $\kappa$ signatures distinguishing policy-gradient from value-based methods, suggesting $\kappa$ as a principled lens for algorithm selection in partially observable multi-agent domains.
+Overcooked demonstrates its utility in a realistic setting (hidden partner roles $\rightarrow$ $\kappa=0.000$ across eight seeds).
+Cross-algorithm measurements reveal systematic $\kappa$ signatures distinguishing policy-gradient from value-based methods.
+Rather than pursuing marginal performance gains, $\kappa$ offers a different kind of value: it identifies training runs that are structurally doomed before they consume substantial compute.
 A short trajectory can lie; $\kappa$ tells you when to believe it.
 
 

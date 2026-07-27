@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  27 JUL 2026 16:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  27 JUL 2026 17:12
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -389,84 +389,80 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/it' will be
 (Font)              scaled to size 9.0pt on input line 35.
+
+Underfull \vbox (badness 6658) has occurred while \output is active []
+
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/sc' will be
 (Font)              scaled to size 10.0pt on input line 60.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/it' will be
 (Font)              scaled to size 10.0pt on input line 65.
-
-[1{C:/Users/Flavi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Fl
-avi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
+ [1{C:/Users/Flavi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/F
+lavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
 
 
 
 {C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf-
 pc.enc}]
-Underfull \hbox (badness 1377) in paragraph at lines 101--105
+Underfull \hbox (badness 1377) in paragraph at lines 102--106
 \T1/ntxtlf/b/n/10 Partial ob-serv-abil-ity in MARL. \T1/ntxtlf/m/n/10 Par-tiall
 y ob-serv-able
  []
 
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.95pt on input line 129.
+(Font)              scaled to size 10.95pt on input line 130.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.95pt on input line 129.
+(Font)              scaled to size 10.95pt on input line 130.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 7.0pt on input line 146.
+(Font)              scaled to size 7.0pt on input line 147.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 5.0pt on input line 146.
-[2]
-Overfull \hbox (11.82707pt too wide) in paragraph at lines 252--264
+(Font)              scaled to size 5.0pt on input line 147.
+[2] [3]
+Overfull \hbox (11.82707pt too wide) in paragraph at lines 262--274
  [][] 
  []
 
-
-Underfull \vbox (badness 1668) has occurred while \output is active []
-
- [3]
 <figures/fig_path_lengths.pdf, id=27, 372.66008pt x 244.34976pt>
 File: figures/fig_path_lengths.pdf Graphic file (type pdf)
 <use figures/fig_path_lengths.pdf>
-Package pdftex.def Info: figures/fig_path_lengths.pdf  used on input line 283.
+Package pdftex.def Info: figures/fig_path_lengths.pdf  used on input line 293.
 (pdftex.def)             Requested size: 239.39438pt x 156.96867pt.
 
-Overfull \hbox (8.5667pt too wide) in paragraph at lines 300--310
+Overfull \hbox (8.5667pt too wide) in paragraph at lines 310--320
  [][] 
  []
 
 <figures/kappa_figure.pdf, id=28, 360.0765pt x 243.62267pt>
 File: figures/kappa_figure.pdf Graphic file (type pdf)
 <use figures/kappa_figure.pdf>
-Package pdftex.def Info: figures/kappa_figure.pdf  used on input line 323.
+Package pdftex.def Info: figures/kappa_figure.pdf  used on input line 333.
 (pdftex.def)             Requested size: 239.39438pt x 161.97357pt.
-[4 <./figures/fig_path_lengths.pdf> <./figures/kappa_figure.pdf>]
-Overfull \hbox (14.92868pt too wide) in paragraph at lines 379--392
+[4 <./figures/fig_path_lengths.pdf>]
+Overfull \hbox (14.92868pt too wide) in paragraph at lines 389--402
  [][] 
  []
 
 
-Underfull \hbox (badness 1303) in paragraph at lines 402--406
+Underfull \hbox (badness 1303) in paragraph at lines 412--416
 \T1/ntxtlf/b/n/10 Proposition 3 (Gra-di-ent Struc-ture Dis-tinc-tion). \T1/ntxt
 lf/m/n/10 Let
  []
 
-[5]
+[5 <./figures/kappa_figure.pdf>]
 
-LaTeX Warning: Reference `fig:reveal' on page 6 undefined on input line 455.
+LaTeX Warning: Reference `fig:reveal' on page 6 undefined on input line 465.
 
-[6] (paper.bbl) [7]
+[6] (paper.bbl [7])
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 578.
+e 589.
 
 (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 578.
+(Font)              scaled to size 10.0pt on input line 589.
 
 [8{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1.
-enc}
-
-] (paper.aux)
+enc}] (paper.aux)
  ***********
 LaTeX2e <2026-06-01>
 L3 programming layer <2020/03/25>
@@ -475,11 +471,14 @@ L3 programming layer <2020/03/25>
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
  ) 
 Here is how much of TeX's memory you used:
  7313 strings out of 467509
  118393 string characters out of 5408780
- 551378 words of memory out of 5000000
+ 549378 words of memory out of 5000000
  36427 multiletter control sequences out of 15000+600000
  686033 words of font info for 91 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -505,7 +504,7 @@ Programs/MiKTeX/fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/L
 ocal/Programs/MiKTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/
 Local/Programs/MiKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (8 pages, 390113 bytes).
+Output written on paper.pdf (8 pages, 391048 bytes).
 PDF statistics:
  275 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

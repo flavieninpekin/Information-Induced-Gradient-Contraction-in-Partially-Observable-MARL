@@ -1,0 +1,149 @@
+当然可以。我会按照**"如果我是一个认真但偏严格的 AAAI reviewer，我希望你们最后 3 天做什么"**来写，而不是泛泛而谈。
+Note：如何把 Borderline / Weak Accept 推向更稳的 Weak Accept
+总体判断
+这篇论文目前最大的优势已经不是理论，而是完整的 scientific story。
+证据链已经形成：
+510K（发现现象）
+→ Toy（隔离机制）
+→ IIGC + κ（理论解释）
+→ Overcooked（真实环境验证）
+→ Cross Algorithm（理论预测）
+→ Continuous Reveal（进一步预测）
+→ Practical Case（工程意义）
+因此，最后几天不要试图增加新的贡献。
+目标只有一个：
+降低 reviewer 犹豫。
+Priority 1（★★★★★）
+回答 Reviewer 最可能的问题：
+Why κ?
+目前已经比前一个版本好很多。
+但是建议 Theory 前面增加一个很短的小节。
+例如：
+A useful diagnostic should satisfy:
+alignment → maximal
+complete cancellation → zero
+independent of gradient magnitude
+admits additive energy decomposition
+最后一句：
+κ is the simplest quantity satisfying these requirements.
+不要增加数学。
+增加的是：
+设计动机。
+Priority 2（★★★★★）
+所有 Claim 再收一点。
+例如：
+目前：
+κ is a general-purpose diagnostic.
+建议：
+κ provides a practical diagnostic for the settings considered in this work.
+目前：
+κ will become...
+建议：
+We envision κ as...
+目前：
+demonstrates...
+建议：
+suggests...
+Reviewer 对保守措辞非常敏感。
+Priority 3（★★★★☆）
+Continuous Reveal
+我认为这是目前论文最有价值的新实验。
+建议：
+Figure 同时放：
+左：
+Performance
+右：
+κ
+正文强调：
+κ minimum
+↓
+Performance minimum
+不要只画 κ。
+否则 reviewer：
+Why should I care?
+Priority 4（★★★★☆）
+Figure ?? 必须补。
+（笑。）
+千万别忘。
+Priority 5（★★★★☆）
+Discussion 不要解释过头。
+例如：
+75%
+最低。
+目前：
+We hypothesize...
+很好。
+继续保持。
+不要写：
+Therefore...
+Reviewer 更喜欢：
+One possible explanation...
+而不是：
+We prove...
+Priority 6（★★★☆☆）
+Introduction
+我建议最后一段提前介绍 κ。
+不要等到 Theory。
+Reviewer 应该第一页就知道：
+Path Integral
+
+κ
+=
+Stable-or-Stuck
+这个组合。
+Priority 7（★★★☆☆）
+把贡献写得更像 Prediction。
+例如：
+不要强调：
+We define κ.
+更强调：
+κ predicts:
+PG vs TD reversal
+Continuous Reveal
+Stable-or-Stuck distinction
+Prediction 比 Definition 更值钱。
+我仍然认为 reviewer 会问的问题
+①
+Why κ instead of cosine similarity?
+（这是最大的。）
+②
+Can this generalize beyond three environments?
+已经有 Limitations。
+问题不大。
+③
+Is 75% accidental?
+回答：
+We hypothesize...
+即可。
+不要 overclaim。
+④
+More baselines?
+如果版面有限。
+我宁愿保留 Continuous Reveal。
+我不会建议做的事情
+❌
+再加 theorem。
+收益太低。
+❌
+硬塞信息几何。
+风格会断裂。
+❌
+疯狂增加 benchmark。
+如果不是理论预测。
+意义有限。
+如果我是 Area Chair
+目前我的印象：
+Novelty：8.5/10
+Theory：7.8/10
+Experiment：8/10
+Writing：8.5/10
+Confidence：
+Weak Accept（偏稳）
+最后，我想留一句话给你。
+昨天我第一次打开 PDF 的时候，我最担心的是：
+"Theory 能不能撑住整篇论文？"
+今天看完新版本，我最大的感受已经变成了：
+"Theory 已经能撑住论文了，剩下的问题是 reviewer 是否会立即理解并接受它。"
+这是一个本质上的变化。
+所以，如果我是你，我这几天不会再追求更深，而会追求更清楚、更自然、更克制。
+很多 AAAI 的论文，并不是靠最后三天多出一个定理过线，而是靠最后三天把 reviewer 心里的那个"Why?"提前回答掉。
