@@ -1,53 +1,160 @@
 \documentclass[letterpaper]{article}
 \usepackage[submission]{aaai2027}
-\usepackage{amsmath,amssymb,booktabs,graphicx}
+\usepackage{amsmath,amssymb,booktabs,graphicx,algorithm,algpseudocode}
 
-\title{Supplementary Material: 510K Game Rules, Feature Definitions, and Extended Data}
+\title{Technical Supplement:\\When Short Trajectories Lie -- IIGC Framework Details and Extended Results}
 \author{Anonymous Submission}
 
 \begin{document}
 \maketitle
 
-\section{510K Game Rules}
+\section{Environment Details}
+
+\subsection{510K Card Game}
 
 510K is a four-player trick-taking game with a standard 52-card deck.
 Cards 5, 10, K carry point values (5, 10, 10).
 The lead player sets the pattern (single, pair, straight, bomb, 510K pattern, etc.); others must follow with a higher-rank play or pass.
 The trick winner collects all 5/10/K points from the trick.
 
-Four modes share identical card mechanics but differ in team structure and termination:
+\medskip
+\noindent\textbf{Action space:} 300 discrete actions (0 = pass, 1--299 = pattern index).
+\noindent\textbf{Observation space:} 112-dim Box (116-dim for OBVIOUS mode, with 4-bit teammate indicator).
+\noindent\textbf{15 pattern types:} SINGLE, PAIR, THREE, THREE\_ONE, THREE\_PAIR, STRAIGHT (5+), CONSECUTIVE\_PAIRS (3+), AIRPLANE\_NONE, AIRPLANE\_SINGLE, AIRPLANE\_PAIR, BOMB, NONSUIT\_510K, SUIT\_510K, RED\_A\_SINGLE, RED\_A\_PAIR.
+
+\medskip
+\noindent Four modes share identical card mechanics but differ in team structure:
 
 \begin{itemize}
-\item \textsc{Single}: solo-competitive. Game ends when first player empties hand. Winner $+30$, losers $-10$ each.
-\item \textsc{Static}: fixed teams (players 0\&2 vs.\ 1\&3). Game ends when both members of one team finish. Winners $+15$, losers $-15$ each.
-\item \textsc{Dynamic}: teams by hidden red-Ace distribution (holders of A$\heartsuit$/A$\diamondsuit$ form one team). Scoring same as \textsc{Static}. Red A is the strongest single card; red-A pair is the strongest bomb pattern.
-\item \textsc{Obvious}: identical card mechanics to \textsc{Dynamic}, but team membership is observable as a 4-bit teammate indicator. This ablation isolates the effect of information structure while holding card hierarchy constant.
+\item \textsc{Single}: solo-competitive. Game ends when first player empties hand.
+  Winner $+30$, losers $-10$ each (plus own 510K points).
+\item \textsc{Static}: fixed teams (players 0\&2 vs.\ 1\&3). Both teammates must finish.
+  Winners $\times 2$ multiplier, losers $\times 1$.
+\item \textsc{Dynamic}: teams determined by hidden red-Ace distribution (holders of
+  A$\heartsuit$/A$\diamondsuit$ form one team). Same scoring as \textsc{Static}.
+  Red A is the strongest single; red-A pair is the strongest bomb.
+\item \textsc{Obvious}: identical card mechanics to \textsc{Dynamic}, but team membership
+  is observable as a 4-bit observation. This isolates \textit{information structure}
+  from card mechanics.
 \end{itemize}
 
-\section{Behavioral Features for Path Integral}
+\subsection{Toy Matching Environment}
 
-Seven mode-independent features ($\phi_1$--$\phi_7$), all with VIF $< 2$ (no multicollinearity):
+A minimal 2-action contextual bandit that isolates IIGC:
 
 \begin{itemize}
-\item $\phi_1$ \textbf{MyScore}: cumulative 510K points scored by the agent, normalized by 150.
-\item $\phi_2$ \textbf{MyHandSize}: fraction of hand already played, $(13 - |h|)/13$.
-\item $\phi_3$ \textbf{MyStrength}: average card rank in hand, mapped to $[0,1]$.
-\item $\phi_4$ \textbf{TrickScore}: 5/10/K points at stake in the current trick, normalized by 100.
-\item $\phi_5$ \textbf{PassCount}: consecutive passes in the current trick, normalized by number of active players.
-\item $\phi_6$ \textbf{ScoreSpread}: standard deviation of 510K scores across all players, normalized by 50. (Cooperative feature; measures score inequality.)
-\item $\phi_7$ \textbf{SuppressionGap}: when following a trick, rank gap between the player's strongest card and the leader's best card, normalized by 12. $0$ when leading. (Cooperative feature; measures competitive pressure.)
+\item \textbf{State}: 1-dim (constant 0) in HIDDEN; 2-dim (one-hot partner type) in REVEALED.
+\item \textbf{Action}: $a \in \{0, 1\}$. Agent chooses which partner type to match.
+\item \textbf{Partner}: hidden binary type $p \in \{0, 1\}$, fixed per episode.
+\item \textbf{Reward}: $+1$ if $a = p$, $-1$ if $a \neq p$.
+\item \textbf{Training}: PPO, 10K steps, 10 seeds per condition.
 \end{itemize}
 
-\textbf{Feature ablation.}
-Deleting any single feature ($\phi_1$--$\phi_7$) preserves the monotonic path-length ordering $\textsc{Single} > \textsc{Static} > \textsc{Dynamic}$ (7/7 subsets), confirming the finding is not an artifact of feature selection.
+In HIDDEN mode, the agent receives no information about $p$.
+Gradients from episodes where $p=0$ and $p=1$ cancel completely ($\kappa \approx 0$).
+In REVEALED mode, the agent observes $p$ directly and learns the optimal
+type-matching policy.
 
-\section{OBVIOUS Mode Construction}
+\subsection{Overcooked Environment}
 
-The \textsc{Obvious} observation vector is 116-dimensional (112 base features + 4 teammate-indicator bits).
-Bit $i = 1$ if player $i$ is on the observing agent's team (according to the red-Ace distribution).
-This is the only structural difference from \textsc{Dynamic} (112-dim observation), enabling a clean ablation: any difference between DYNAMIC and OBVIOUS is attributable to \textit{team information visibility}, not to card mechanics.
+Grid-world cooperative cooking game with configurable partner roles:
 
-\section{Path Integral Full Data}
+\begin{itemize}
+\item \textbf{State}: 96-dim observation (grid layout, object positions, inventory).
+\item \textbf{Action}: 6 discrete actions (up/down/left/right/interact/stay).
+\item \textbf{Partner roles}: CHEF (cooks soup) or WAITER (delivers soup).
+\item \textbf{Static mode}: partner role visible as 1-hot observation.
+\item \textbf{Dynamic mode}: partner role hidden, switches every 30 steps.
+\item \textbf{Reward}: sparse $+20$ per soup delivered.
+\item \textbf{Training}: PPO, 1M steps, 8 parallel envs, 8 seeds per mode.
+\end{itemize}
+
+\section{$\kappa$ Computation}
+
+\subsection{Pseudocode}
+
+\begin{algorithm}[H]
+\caption{Computing the Relational Gradient Retention Ratio $\kappa$}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Trained policy $\pi_\theta$, environment with two hidden
+  configurations $A$ and $B$, number of rollouts $N$, discount $\gamma$
+\State \textbf{Output:} $\kappa \in [0, 1]$
+\State
+\State $g_A \gets \mathbf{0}$ \Comment{Accumulated gradient for config $A$}
+\State $g_B \gets \mathbf{0}$ \Comment{Accumulated gradient for config $B$}
+\For{$i \gets 1$ to $N$}
+  \State $\tau_A \gets \text{Rollout}(\pi_\theta, \text{config}=A)$
+  \State $\tau_B \gets \text{Rollout}(\pi_\theta, \text{config}=B)$
+  \State $g_A \gets g_A + \frac{1}{N} \sum_{t} \nabla_\theta \log \pi_\theta(a_t|o_t) \cdot R(\tau_A)$
+  \State $g_B \gets g_B + \frac{1}{N} \sum_{t} \nabla_\theta \log \pi_\theta(a_t|o_t) \cdot R(\tau_B)$
+\EndFor
+\State
+\State $g_{\text{mixed}} \gets \frac{1}{2}(g_A + g_B)$
+\State $\kappa \gets \dfrac{\|g_{\text{mixed}}\|^2}{\frac{1}{2}(\|g_A\|^2 + \|g_B\|^2)}$
+\State \textbf{return} $\kappa$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Implementation Notes}
+
+\begin{itemize}
+\item Gradients are computed via REINFORCE $\nabla_\theta \log \pi(a|o) \cdot R(\tau)$,
+  not via backpropagation through a training loss.
+\item $\kappa$ requires only \textbf{rollout access} to the policy, not training access.
+  It can be computed post-hoc from any saved checkpoint.
+\item $N \approx 30$ rollouts per configuration suffices for stable $\kappa$ estimates.
+\item For value-based methods (DQN), we substitute the TD-loss gradient
+  $\nabla_\theta (Q_\theta(s,a) - y)^2$ in place of the REINFORCE gradient.
+\item When $\|g_A\|^2 + \|g_B\|^2 = 0$ (zero gradient energy), define $\kappa = 0.5$.
+\end{itemize}
+
+\section{Proofs of Propositions}
+
+\subsection{Proposition 1 (Pythagorean Decomposition)}
+
+Let $g_A, g_B \in \mathbb{R}^d$ be the policy gradients under configurations $A$ and $B$.
+Define $g_+ = \frac{g_A + g_B}{2}$ (shared component) and $g_- = \frac{g_A - g_B}{2}$
+(differential component).
+
+\begin{align}
+\|g_A\|^2 + \|g_B\|^2
+&= \|g_+ + g_-\|^2 + \|g_+ - g_-\|^2 \\
+&= (\|g_+\|^2 + \|g_-\|^2 + 2 g_+ \cdot g_-) +
+   (\|g_+\|^2 + \|g_-\|^2 - 2 g_+ \cdot g_-) \\
+&= 2(\|g_+\|^2 + \|g_-\|^2)
+\end{align}
+
+Therefore $\frac{\|g_A\|^2 + \|g_B\|^2}{2} = \|g_+\|^2 + \|g_-\|^2$.
+Since $\kappa = \|g_+\|^2 / (\|g_+\|^2 + \|g_-\|^2)$, it follows that $\kappa$ is the
+fraction of total gradient energy retained after aggregation.
+
+\subsection{Proposition 2 (Effective Learning Signal)}
+
+Under balanced configuration mixing ($p_A = p_B = 1/2$), the expected per-step
+gradient during training is:
+\begin{equation}
+\mathbb{E}[g_{\text{train}}] = \frac{1}{2}(g_A + g_B) = g_+
+\end{equation}
+The effective gradient magnitude satisfies:
+\begin{equation}
+\|g_+\|^2 = \kappa \cdot \frac{\|g_A\|^2 + \|g_B\|^2}{2}
+\end{equation}
+When $\kappa \to 0$, $\|g_+\|^2 \to 0$ and the policy receives no effective
+learning signal regardless of the per-configuration gradient magnitudes.
+
+\subsection{Proposition 3 (Gradient Structure Distinction)}
+
+For policy-gradient methods, $g_r^{\text{PG}}$ reflects the direction of
+improvement in action preferences for configuration $r$.
+When optimal actions differ across configurations, $g_A^{\text{PG}} \approx -g_B^{\text{PG}}$
+and $\kappa_{\text{PG}} \to 0$.
+
+For TD-learning methods, $g_r^{\text{TD}}$ minimizes prediction error under a
+\textit{shared} Q-function. Both configurations push toward representations
+that minimize error across the mixture, producing aligned updates:
+$\kappa_{\text{TD}} > \kappa_{\text{PG}}$ under identical information asymmetry.
+
+\section{Full Path Integral Data}
 
 \begin{table}[h]
 \centering
@@ -118,7 +225,7 @@ Overcooked & DQN & DYNAMIC & $0.645 \pm 0.209$ & 8 \\
 \caption{Complete $\kappa$ dataset across all environments, algorithms, and modes.}
 \end{table}
 
-\section{Continuous Reveal Full Data}
+\section{Continuous Reveal Data}
 
 \begin{table}[h]
 \centering
@@ -154,15 +261,45 @@ $\gamma$ (discount) & 0.99 \\
 GAE $\lambda$     & 0.95 \\
 Clip range        & 0.2 \\
 Entropy coeff.    & 0.01 \\
-Network           & MLP, [256, 256], tanh \\
+Network           & MLP [256, 256], tanh activation \\
 A2C n\_steps      & 256 \\
-DQN buffer        & 50,000 \\
+DQN buffer size   & 50,000 \\
 DQN learning starts & 5,000 \\
-DQN $\tau$        & 0.005 \\
-DQN exploration   & $\epsilon: 1.0 \to 0.02$ over 30\% of training \\
+DQN $\tau$ (target update) & 0.005 \\
+DQN exploration   & $\epsilon$-greedy: $1.0 \to 0.02$ over 30\% of training \\
+SAC $\alpha$      & Auto-tuned (initial 0.2) \\
+REINFORCE lr      & $1 \times 10^{-3}$ \\
 \bottomrule
 \end{tabular}
-\caption{Training hyperparameters.}
+\caption{Training hyperparameters for all algorithms.}
 \end{table}
+
+\section{Computing Infrastructure}
+
+\begin{itemize}
+\item GPU: NVIDIA GeForce RTX 5070 Ti Laptop GPU (12 GB VRAM)
+\item CPU: Intel(R) UHD Graphics (128 MB, auxiliary)
+\item RAM: 32 GB
+\item OS: Windows 11
+\item Framework: PyTorch 2.x, stable-baselines3 2.x, sb3-contrib 2.x
+\item Environment: Gymnasium 0.29+, NumPy 1.24+
+\end{itemize}
+
+\section{Code Availability}
+
+All source code is publicly available under the MIT License:
+
+\begin{itemize}
+\item \textbf{Main repository} (full experimental pipeline):
+  \url{https://github.com/flavieninpekin/Information-Induced-Gradient-Contraction-in-Partially-Observable-MARL}
+\item \textbf{Reproduction package} (curated for paper replication):
+  \url{https://github.com/flavieninpekin/AAAI2027-510k-clear}
+\item \textbf{510K environment} (standalone Gymnasium + PettingZoo package):
+  \url{https://github.com/flavieninpekin/510k_env}
+\end{itemize}
+
+The reproduction package includes pre-computed results for validation,
+config files for all experiment configurations, and a single-entry
+\texttt{experiments/reproduce\_all.py} script to reproduce all paper results.
 
 \end{document}
