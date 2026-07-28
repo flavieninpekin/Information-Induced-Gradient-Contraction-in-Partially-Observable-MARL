@@ -579,10 +579,46 @@ Overcooked demonstrates its utility in a realistic setting (hidden partner roles
 Cross-algorithm measurements reveal systematic $\kappa$ signatures distinguishing policy-gradient from value-based methods.
 Rather than pursuing marginal performance gains, $\kappa$ offers a different kind of value: it identifies training runs that are structurally doomed before they consume substantial compute.
 A short trajectory can lie; $\kappa$ tells you when to believe it.
-See the Technical Supplement for environment details, $\kappa$ computation pseudocode, proofs, full data tables, and code availability.
 
 
 \bibliographystyle{aaai2027}
 \bibliography{references}
+
+\newpage
+\section*{Appendix A: 510K Game Rules and Feature Definitions}
+
+\textbf{Game rules.}
+510K is a four-player trick-taking game with a standard 52-card deck.
+Cards 5, 10, K carry point values (5, 10, 10).
+The lead player sets the pattern (single, pair, straight, bomb, 510K pattern); others must follow with a higher-rank play or pass.
+The trick winner collects all 5/10/K points from the trick.
+
+Four modes share identical card mechanics but differ in team structure and termination:
+\begin{itemize}
+\item \textsc{Single}: solo-competitive. Game ends when first player empties hand. Winner $+30$, losers $-10$ each.
+\item \textsc{Static}: fixed teams (0\&2 vs.\ 1\&3). Game ends when both members of one team finish. Winners $+15$, losers $-15$ each.
+\item \textsc{Dynamic}: teams by hidden red-Ace distribution (holders of A$\heartsuit$/A$\diamondsuit$ form one team). Scoring same as \textsc{Static}. Red A is the strongest single; red-A pair is the strongest bomb.
+\item \textsc{Obvious}: identical to \textsc{Dynamic} in card mechanics, but team membership is observable (4-bit indicator). Ablation isolating information structure.
+\end{itemize}
+
+\textbf{Behavioral features.}
+Seven mode-independent features ($\phi_1$--$\phi_7$), all VIF $< 2$:
+\begin{itemize}
+\item $\phi_1$ MyScore: cumulative 510K points, normalized by 150.
+\item $\phi_2$ MyHandSize: fraction of hand played.
+\item $\phi_3$ MyStrength: average card rank, mapped to $[0,1]$.
+\item $\phi_4$ TrickScore: points at stake in current trick, normalized by 100.
+\item $\phi_5$ PassCount: consecutive passes in current trick, normalized.
+\item $\phi_6$ ScoreSpread: std.\ of scores across players, normalized by 50. (Cooperative feature.)
+\item $\phi_7$ SuppressionGap: rank gap to leader's strongest card, normalized by 12. (Cooperative feature.)
+\end{itemize}
+
+\textbf{Feature ablation.}
+Deleting any single feature ($\phi_1$--$\phi_7$) preserves the monotonic path-length ordering $\textsc{Single} > \textsc{Static} > \textsc{Dynamic}$ (7/7 subsets), confirming the finding is not an artifact of feature selection.
+
+\textbf{OBVIOUS construction.}
+The \textsc{Obvious} observation vector is 116-dimensional (112 base + 4 teammate-indicator bits).
+The 4 bits encode: bit $i=1$ if player $i$ is on the observing agent's team.
+This is the only structural difference from \textsc{Dynamic} (112-dim observation).
 
 \end{document}
