@@ -95,6 +95,7 @@ We contribute:
 (2)~$\kappa$, a lightweight, broadly computable metric for detecting this failure before committing to full-scale training;
 (3)~the \textbf{Stable-or-Stuck diagnostic}, pairing $\kappa$ with path integrals for trajectory-level diagnosis;
 and (4)~a three-environment, cross-algorithm validation establishing the framework's diagnostic scope.
+A short trajectory can lie; $\kappa$ tells you when to believe it.
 
 
 \section{Related Work}
@@ -465,7 +466,7 @@ $\kappa_{100\%} = 0.616$ exceeds all partial-information conditions, confirming 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_reveal.pdf}
-\caption{Continuous reveal $\kappa$ curve on 510K (PPO, 2 seeds/point, $10^6$ steps). The relationship is non-monotonic: 75\% reveal is the global minimum ($\kappa=0.324$, 39\% below baseline).}
+\caption{$\kappa$ reveals a non-monotonic response to partial information disclosure on 510K (PPO, 2 seeds/point, $10^6$ steps). 75\% reveal produces the strongest gradient contraction ($\kappa=0.324$, 39\% below baseline), worse than complete information hiding.}
 \label{fig:reveal}
 \end{figure}
 
@@ -512,12 +513,12 @@ It provides three complementary signals:
 (1)~\textbf{direction}: $\kappa_R > \kappa_H$ indicates IIGC from hidden information;
 (2)~\textbf{magnitude}: $\kappa \to 0$ signals near-complete gradient cancellation;
 (3)~\textbf{stability}: high $\kappa$ variance ($\sigma > 0.2$) predicts convergence failure.
-Together with $\mathcal{P}$, $\kappa$ forms a diagnostic suite computable from any trained checkpoint without modifying the training pipeline.
+  Although $\kappa$ arises from our theoretical analysis of IIGC, its computation requires only rollout access and naturally lends itself to practical diagnosis.
 We envision a practical workflow: a practitioner trains an agent for a small number of steps (roughly $10\%$ of a full run), measures $\kappa$, and decides whether to proceed, adjust the observation scheme, or switch algorithms---potentially reducing unnecessary computation on configurations where gradient cancellation precludes effective learning.
 
 \subsection{Case Study: Diagnosing a Noisy Sensor}
 
-As an illustrative workflow demonstrating $\kappa$'s diagnostic logic, we walk through a diagnosis-and-repair scenario using the continuous reveal data.
+The following is an illustrative usage example rather than an additional experimental result. It demonstrates how a practitioner might use $\kappa$ to diagnose and repair a training configuration that is underperforming for an unexpected reason.
 
 \textbf{Scenario.}
 A practitioner is training PPO on 510K with hidden teammate information (0\% reveal baseline, $\kappa = 0.534$).

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  27 JUL 2026 17:24
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  28 JUL 2026 09:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -403,46 +403,46 @@ lavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
 
 {C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/newtx/ntx-ec-tlf-
 pc.enc}]
-Underfull \hbox (badness 1377) in paragraph at lines 102--106
+Underfull \hbox (badness 1377) in paragraph at lines 103--107
 \T1/ntxtlf/b/n/10 Partial ob-serv-abil-ity in MARL. \T1/ntxtlf/m/n/10 Par-tiall
 y ob-serv-able
  []
 
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.95pt on input line 130.
+(Font)              scaled to size 10.95pt on input line 131.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.95pt on input line 130.
+(Font)              scaled to size 10.95pt on input line 131.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 7.0pt on input line 147.
+(Font)              scaled to size 7.0pt on input line 148.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 5.0pt on input line 147.
+(Font)              scaled to size 5.0pt on input line 148.
 [2] [3]
-Overfull \hbox (11.82707pt too wide) in paragraph at lines 262--274
+Overfull \hbox (11.82707pt too wide) in paragraph at lines 263--275
  [][] 
  []
 
 <figures/fig_path_lengths.pdf, id=27, 372.66008pt x 244.34976pt>
 File: figures/fig_path_lengths.pdf Graphic file (type pdf)
 <use figures/fig_path_lengths.pdf>
-Package pdftex.def Info: figures/fig_path_lengths.pdf  used on input line 293.
+Package pdftex.def Info: figures/fig_path_lengths.pdf  used on input line 294.
 (pdftex.def)             Requested size: 239.39438pt x 156.96867pt.
 
-Overfull \hbox (8.5667pt too wide) in paragraph at lines 310--320
+Overfull \hbox (8.5667pt too wide) in paragraph at lines 311--321
  [][] 
  []
 
 <figures/kappa_figure.pdf, id=28, 360.0765pt x 243.62267pt>
 File: figures/kappa_figure.pdf Graphic file (type pdf)
 <use figures/kappa_figure.pdf>
-Package pdftex.def Info: figures/kappa_figure.pdf  used on input line 333.
+Package pdftex.def Info: figures/kappa_figure.pdf  used on input line 334.
 (pdftex.def)             Requested size: 239.39438pt x 161.97357pt.
 [4 <./figures/fig_path_lengths.pdf>]
-Overfull \hbox (14.92868pt too wide) in paragraph at lines 389--402
+Overfull \hbox (14.92868pt too wide) in paragraph at lines 390--403
  [][] 
  []
 
 
-Underfull \hbox (badness 1303) in paragraph at lines 412--416
+Underfull \hbox (badness 1303) in paragraph at lines 413--417
 \T1/ntxtlf/b/n/10 Proposition 3 (Gra-di-ent Struc-ture Dis-tinc-tion). \T1/ntxt
 lf/m/n/10 Let
  []
@@ -451,17 +451,17 @@ lf/m/n/10 Let
 <figures/fig_reveal.pdf, id=181, 352.09476pt x 243.62267pt>
 File: figures/fig_reveal.pdf Graphic file (type pdf)
 <use figures/fig_reveal.pdf>
-Package pdftex.def Info: figures/fig_reveal.pdf  used on input line 467.
+Package pdftex.def Info: figures/fig_reveal.pdf  used on input line 468.
 (pdftex.def)             Requested size: 239.39438pt x 165.64262pt.
  [6 <./figures/fig_reveal.pdf>] (paper.bbl
 [7])
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 596.
+e 597.
  (C:\Users\Flavi\AppData\Local\Programs\MiKTeX\tex/latex/newtx\ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 596.
+(Font)              scaled to size 10.0pt on input line 597.
  [8{C:/Users/Flavi/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1
 .enc}] (paper.aux)
  ***********
@@ -498,7 +498,7 @@ Programs/MiKTeX/fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/AppData/L
 ocal/Programs/MiKTeX/fonts/type1/public/newtx/ztmr.pfb><C:/Users/Flavi/AppData/
 Local/Programs/MiKTeX/fonts/type1/public/newtx/ztmri.pfb>
-Output written on paper.pdf (8 pages, 415641 bytes).
+Output written on paper.pdf (8 pages, 415810 bytes).
 PDF statistics:
  346 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

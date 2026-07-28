@@ -1,0 +1,231 @@
+先回答你的担心：
+
+"普通 reviewer 会不会看不懂，然后直接打低分？"
+
+我觉得现在比之前好多了，但还有两个地方可以继续降低风险。
+
+我这次不是从"研究好不好"的角度看，而是假装我是一个 MARL 方向但没做过信息几何的 reviewer。
+
+第一印象（第一页）
+
+我觉得第一页现在已经比之前顺很多。
+
+我能在前两页回答三个问题：
+
+你发现了什么现象？
+
+为什么现有指标解释不了？
+
+你提出了什么？（Path Integral + κ）
+
+这一点我觉得已经过关了。
+
+真正容易掉 reviewer 的地方
+
+其实不是 Theory。
+
+而是 Discussion 开始之后。
+
+例如这里：
+
+κ is lightweight, post-hoc ... provides three complementary signals... 
+
+我理解。
+
+因为我已经读完整篇。
+
+但是普通 reviewer看到这里可能脑子会出现一句：
+
+"等等，κ现在到底是什么？"
+
+他会开始混淆：
+
+κ 是：
+
+一个理论量？
+
+一个评价指标？
+
+一个 Debug 工具？
+
+一个 Stability 指标？
+
+其实你们想表达的是：
+
+κ 是理论定义出来的一个量。
+
+然后：
+
+它恰好可以拿来做：
+
+Diagnostic。
+
+我建议把这个层级关系说得再明显一点。
+
+我觉得最好加一句
+
+例如：
+
+Although κ is introduced from our theoretical analysis of IIGC, its computation is straightforward and naturally lends itself to practical diagnosis.
+
+一句就够。
+
+reviewer马上知道：
+
+Theory → Tool
+
+不是：
+
+Tool → Theory。
+
+第二个我担心的地方
+
+Case Study。
+
+我昨天说过。
+
+今天还是这个感觉。
+
+Case Study 写得挺精彩。
+
+但是 reviewer 很容易问：
+
+这是实验？
+
+还是：
+
+Example？
+
+现在虽然用了：
+
+illustrative workflow 
+
+但是我建议第一句更直接：
+
+The following is an illustrative usage example rather than an additional experimental result.
+
+这样 reviewer 一秒钟理解。
+
+否则有的人会：
+
+翻 Figure。
+
+发现：
+
+"没有这个实验。"
+
+然后开始疑惑。
+
+第三个
+
+我其实特别喜欢：
+
+A short trajectory can lie; κ tells you when to believe it. 
+
+真的很好。
+
+这是全文最容易记住的一句话。
+
+但是。
+
+我会考虑把它提前。
+
+甚至放到：
+
+Introduction 最后一段。
+
+因为：
+
+这是 reviewer 最容易带走的一句话。
+
+第四
+
+Continuous Reveal。
+
+这里我有一个小建议。
+
+Figure 3：
+
+现在：
+
+Continuous reveal κ curve 
+
+我会改：
+
+κ reveals a non-monotonic response to partial information disclosure 
+
+因为：
+
+Reviewer 一眼知道：
+
+为什么画这张图。
+
+第五（这是我觉得最重要的）
+
+其实。
+
+你一直担心：
+
+普通 reviewer 会不会看不懂。
+
+我反而觉得。
+
+不是文字。
+
+而是：
+
+Contribution 有没有一个"一句话版本"。
+
+如果 reviewer只看摘要和第一页。
+
+他应该能复述：
+
+作者提出：
+
+κ 是一个诊断 hidden-information gradient contraction 的指标。
+
+如果 reviewer复述不了。
+
+说明 Introduction 还可以继续压缩。
+
+如果我是 AC
+
+我会怎么评价？
+
+我现在真的会写：
+
+The paper is easy to follow despite introducing a new theoretical quantity.
+
+这句话我昨天不会写。
+
+今天会。
+
+因为你已经把 κ 的定位收窄了。
+
+最后，我其实想告诉你一个让我安心的变化。
+
+昨天你的论文让我觉得：
+
+作者想证明 κ 很厉害。
+
+今天你的论文让我觉得：
+
+作者想解释一个现象，而 κ 是解释这个现象最重要的工具。
+
+这两个给 reviewer 的心理感受完全不同。
+
+我最后给你一个"跨领域 reviewer 测试"（也是我自己常用的）。
+
+如果一个没做过 MARL 的机器学习研究者读完论文，他应该能在 30 秒内说出下面这四句话：
+
+作者发现了一个反直觉现象：隐藏关系信息会让学习轨迹变短，却不一定学得更好。
+
+作者认为原因不是 reward，而是梯度在不同隐藏状态之间发生了抵消（IIGC）。
+
+κ 衡量的是有多少梯度信号最终保留下来，因此它是训练健康度（training health）的诊断指标，而不是最终性能预测器。
+
+如果 κ 很低，即使训练轨迹很"漂亮"，也可能只是陷入了"Stable-or-Stuck"中的 Stuck。
+
+如果这四句话，一个普通 reviewer 能自然复述出来，那么我认为你的论文用户界面（UI）已经足够好了。
+
+而我现在的感觉是：前三句已经基本能做到，第四句再强化一点（尤其在 Introduction 或 Figure 1 中体现 Stable-or-Stuck 的核心思想），这篇论文对跨领域 reviewer 的友好程度还会再提升一个档次。
