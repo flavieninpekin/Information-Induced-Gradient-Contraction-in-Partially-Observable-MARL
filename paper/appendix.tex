@@ -38,6 +38,27 @@ The trick winner collects all 5/10/K points from the trick.
   from card mechanics.
 \end{itemize}
 
+\medskip
+\noindent\textbf{Behavioral features for path integral.}
+Seven mode-independent features ($\phi_1$--$\phi_7$), all with VIF $< 2$:
+\begin{itemize}
+\item $\phi_1$ \textbf{MyScore}: cumulative 510K points, normalized by 150.
+\item $\phi_2$ \textbf{MyHandSize}: fraction of hand played, $(13 - |h|)/13$.
+\item $\phi_3$ \textbf{MyStrength}: average card rank, mapped to $[0,1]$.
+\item $\phi_4$ \textbf{TrickScore}: points at stake in current trick, normalized by 100.
+\item $\phi_5$ \textbf{PassCount}: consecutive passes in current trick, normalized.
+\item $\phi_6$ \textbf{ScoreSpread}: std.\ of scores across players, normalized by 50.
+\item $\phi_7$ \textbf{SuppressionGap}: rank gap to leader's strongest card, normalized by 12.
+\end{itemize}
+Feature ablation: deleting any single feature preserves the path-length ordering
+$\textsc{Single} > \textsc{Static} > \textsc{Dynamic}$ (7/7 subsets).
+
+\medskip
+\noindent\textbf{OBVIOUS construction.}
+The \textsc{Obvious} observation is 116-dim (112 base + 4 teammate-indicator bits).
+Bit $i=1$ if player $i$ is on the agent's team. This is the only structural
+difference from \textsc{Dynamic} (112-dim).
+
 \subsection{Toy Matching Environment}
 
 A minimal 2-action contextual bandit that isolates IIGC:
@@ -90,7 +111,7 @@ Grid-world cooperative cooking game with configurable partner roles:
 \EndFor
 \State
 \State $g_{\text{mixed}} \gets \frac{1}{2}(g_A + g_B)$
-\State $\kappa \gets \dfrac{\|g_{\text{mixed}}\|^2}{\frac{1}{2}(\|g_A\|^2 + \|g_B\|^2)}$
+\State $\kappa \gets \|g_{\text{mixed}}\|^2 \;/\; \tfrac{1}{2}(\|g_A\|^2 + \|g_B\|^2)$
 \State \textbf{return} $\kappa$
 \end{algorithmic}
 \end{algorithm}
@@ -119,9 +140,9 @@ Define $g_+ = \frac{g_A + g_B}{2}$ (shared component) and $g_- = \frac{g_A - g_B
 \begin{align}
 \|g_A\|^2 + \|g_B\|^2
 &= \|g_+ + g_-\|^2 + \|g_+ - g_-\|^2 \\
-&= (\|g_+\|^2 + \|g_-\|^2 + 2 g_+ \cdot g_-) +
-   (\|g_+\|^2 + \|g_-\|^2 - 2 g_+ \cdot g_-) \\
-&= 2(\|g_+\|^2 + \|g_-\|^2)
+&= \bigl(\|g_+\|^2 + \|g_-\|^2 + 2 g_+ \!\cdot\! g_-\bigr) \\
+&\qquad + \bigl(\|g_+\|^2 + \|g_-\|^2 - 2 g_+ \!\cdot\! g_-\bigr) \\
+&= 2\bigl(\|g_+\|^2 + \|g_-\|^2\bigr)
 \end{align}
 
 Therefore $\frac{\|g_A\|^2 + \|g_B\|^2}{2} = \|g_+\|^2 + \|g_-\|^2$.

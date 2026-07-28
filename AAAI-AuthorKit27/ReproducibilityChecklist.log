@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  28 JUL 2026 10:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.6.18)  28 JUL 2026 10:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -158,7 +158,7 @@ File: t1ntxtlf.fd 2021/05/24 v1.1 font definition file for T1/ntx/tlf
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
 (Font)              scaled to size 10.0pt on input line 20.
 
-No file ReproducibilityChecklist.aux.
+(ReproducibilityChecklist.aux)
 \openout1 = `ReproducibilityChecklist.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 20.
@@ -281,10 +281,10 @@ L3 programming layer <2020/03/25>
  )
 (\end occurred when \iftrue on line 220 was incomplete) 
 Here is how much of TeX's memory you used:
- 3662 strings out of 467509
- 60045 string characters out of 5408780
+ 3665 strings out of 467509
+ 60195 string characters out of 5408780
  508568 words of memory out of 5000000
- 32864 multiletter control sequences out of 15000+600000
+ 32865 multiletter control sequences out of 15000+600000
  640957 words of font info for 48 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  89i,5n,91p,358b,269s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -293,7 +293,7 @@ Local/Programs/MiKTeX/fonts/type1/public/tex-gyre/qtmr.pfb><C:/Users/Flavi/AppD
 ata/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/Flavi/Ap
 pData/Local/Programs/MiKTeX/fonts/type1/public/newtx/ztmb.pfb><C:/Users/Flavi/A
 ppData/Local/Programs/MiKTeX/fonts/type1/public/newtx/ztmr.pfb>
-Output written on ReproducibilityChecklist.pdf (2 pages, 99092 bytes).
+Output written on ReproducibilityChecklist.pdf (2 pages, 99087 bytes).
 PDF statistics:
  32 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
