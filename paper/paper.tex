@@ -16,7 +16,7 @@
 \pdfinfo{/TemplateVersion (2027.1)}
 \setcounter{secnumdepth}{0}
 
-\title{When Short Trajectories Lie:\\Information-Induced Gradient Contraction in Multi-Agent RL}
+\title{When Learning Paths Lie:\\Gradient Retention under Hidden Relations}
 \author{Anonymous Submission}
 \affiliations{}
 
@@ -24,601 +24,758 @@
 \maketitle
 
 \begin{abstract}
-Short learning trajectories are routinely taken as evidence of stable convergence in reinforcement learning.
-We show that, under partially observable multi-agent settings, they may instead signal a failure to learn.
-When relational variables---teammate identity, role, or task assignment---are hidden, policy gradients that are individually informative across distinct relational contexts are projected onto a coarser observation space and may cancel.
-%
-We formalize this phenomenon as \textbf{Information-Induced Gradient Contraction (IIGC)}, derive a Pythagorean decomposition of relation-conditioned gradient energy, and introduce the \textbf{Relational Gradient Retention Ratio}, $\kappa$, which quantifies how much usable learning signal survives partial observability.
-Combined with the path integral $\mathcal{P}$, $\kappa$ yields a \textbf{Stable-or-Stuck diagnostic} that distinguishes genuine convergence from information-induced stagnation across four distinct training regimes.
+Little movement in policy space admits two incompatible explanations: the policy has converged, or the learning signal has disappeared.
+Path-length diagnostics cannot separate them.
+We study one source of this ambiguity in multi-agent reinforcement learning: \emph{relational aliasing}, where states requiring different behavior share an observation because teammate identity, partner role, or task assignment is hidden.
+The resulting relation-conditioned policy gradients can cancel when aggregated.
+We call this failure \textbf{Information-Induced Gradient Contraction} (IIGC).
 
-We validate this framework across three multi-agent environments of increasing complexity.
-In 510K, a four-player card game with configurable cooperation structures, 22 independent PPO training runs reveal that the hidden-relation regime produces the \emph{shortest} behavioral trajectories ($0.293 \pm 0.049$), while revealing the same relations yields longer paths ($0.328 \pm 0.062$)---a pattern consistent with IIGC.
-A visible-team ablation ($n=8$) isolates \textbf{known-team information} as the causal driver ($\Delta = 0.001$ vs.\ identical-card-mechanics baseline).
-A synthetic toy problem exposes the extreme case: $\kappa \approx 0$, a wandering learning path ($0.48$), and chance-level return---the path integral and $\kappa$ give opposite diagnoses.
-In Overcooked with configurable partner roles, $\kappa$ identifies gradient death ($\kappa = 0.000$) under hidden partner identities across all eight seeds, while the path integral alone would be ambiguous.
-Cross-algorithm $\kappa$ measurements reveal systematic signatures distinguishing policy-gradient, value-based, and actor-critic methods.
-We recommend $\kappa$ as a lightweight pre-training diagnostic: before committing resources to large-scale training, a practitioner can measure $\kappa$ on a small pilot to determine whether the information structure of the problem permits gradient-based learning at all.
+For relation-conditioned gradients $g_A$ and $g_B$, we define total gradient energy
+$\mathcal{E}=(\|g_A\|^2+\|g_B\|^2)/2$ and the \textbf{Relational Gradient Retention Ratio}
+$\kappa=\|(g_A+g_B)/2\|^2/\mathcal{E}$.
+An exact decomposition shows that $\kappa$ is the fraction of relation-conditioned gradient energy retained after mixing.
+This interpretation also exposes a necessary boundary: $\kappa$ is undefined when $\mathcal{E}=0$, and $\kappa=1/2$ can mean that only one relation supplies gradient energy.
+We therefore pair behavioral path length with an energy gate and $\kappa$, rather than treating any scalar as a stand-alone convergence test.
+
+Across 22 PPO runs in the 510K card game, hidden teams produce the shortest behavioral paths, whereas a controlled Toy task produces a $44\times$ longer path under hidden context despite chance return.
+Toy gradients resolve the contradiction: $\kappa$ falls from $0.726$ to $0.039$ over ten seeds.
+Overcooked supplies a stress test in which zero return makes gradient energy vanish, demonstrating why the gate is essential.
+Measurements with policy-gradient and TD estimators further show that retention is estimator-specific, not a universal algorithm score.
 \end{abstract}
 
 
 \section{Introduction}
 
-Consider three multi-agent reinforcement learning (MARL) scenarios:
+A policy that barely changes can be finished or unable to start.
+Both cases yield a short trajectory through parameter or behavior space, but they call for opposite decisions: stop training in the first case; repair the information structure in the second.
+Return eventually separates them, but only after the run has spent the compute that a diagnostic is meant to save.
+The question is therefore not whether a policy moved, but whether the update rule had a coherent direction in which to move it.
 
-\begin{enumerate}
-\item In a four-player card game, an agent wins by cooperating with a teammate whose identity is hidden---determined by a private card each player holds. The agent must infer its teammate from gameplay.
-\item A chef in a crowded kitchen receives a different cooking partner each shift. The partner's role (cook vs.\ deliver) is hidden, requiring the chef to adapt its strategy on the fly.
-\item An agent chooses between two actions. Reward arrives only when its action matches a hidden partner's type---but the agent never observes the partner.
-\end{enumerate}
+This distinction surfaced in a four-player card game.
+Across 22 PPO runs in 510K, the behavioral path integral decreased from solo play to fixed teams and was shortest when team identity was hidden.
+The naive reading was attractive: stronger cooperation had stabilized learning.
+It was also underidentified.
+A short path records displacement, not cause; it cannot distinguish efficient convergence from a missing update.
+In a minimal matching task, hiding a binary partner type produced the opposite geometry---a path $44\times$ longer than with the type revealed---yet the hidden policy remained at chance.
+The sign of the path-length change was environment-dependent while the learning failure was the same.
 
-In each case, the agent faces \textbf{hidden relational information}: it cannot observe a critical variable (teammate identity, partner role, partner type) that determines the optimal policy.
-A natural question arises: how does hidden relational information affect the training trajectory?
+We trace this ambiguity to \textbf{relational aliasing}.
+Let $r$ denote a relation that changes which action is useful: teammate identity, partner role, or task assignment.
+When $r$ is hidden, trajectories from different relations update the same policy through the same observation.
+Each conditional gradient may be informative, yet their mixture can be small because the gradients disagree.
+This is not ordinary gradient noise: more samples estimate the same contracted expectation more accurately.
+Nor is it the general statement that partial observability is hard.
+It is a testable mechanism linking a specific information loss to the update vector.
 
-The conventional answer: it should complicate training. Hidden information introduces uncertainty, which should manifest as noisier, longer, more tortuous training paths.
-Our experiments on \textbf{510K}, a four-player Chinese trick-taking card game, initially appeared to confirm this intuition---but in the opposite direction.
-%
-Across 22 independent PPO training runs spanning four rule variants (solo, \textsc{fixed-team}, \textsc{hidden-team}, and a \textsc{visible-team} ablation), we tracked each policy's evolution through a seven-dimensional behavioral feature space.
-Computing the \textbf{path integral}---the cumulative L2 distance traversed through this space over training---revealed a monotonic pattern:
-\textbf{stronger cooperation constraints produce shorter, more stable trajectories} (Spearman $r = -0.62$, $p = 0.019$, Cohen's $d = 2.67$).
-%
-The solo-competitive mode (\textsc{Single}) produced the longest paths ($0.456 \pm 0.071$), while the hidden-team mode (\textsc{Dynamic}) produced the shortest ($0.293 \pm 0.049$).
-At face value, hidden information \emph{stabilized} training.
+We formalize the mechanism as \textbf{Information-Induced Gradient Contraction} (IIGC) and measure it with the \textbf{Relational Gradient Retention Ratio} $\kappa$.
+The construction separates two questions that are otherwise conflated:
+\emph{Is there relation-conditioned gradient energy?}
+If so, \emph{what fraction survives aggregation?}
+The first is answered by an energy gate $\mathcal{E}$; the second by $\kappa$.
+Together with a behavioral path integral $\mathcal{P}$, they form a \textbf{Stable-or-Stuck diagnostic}: $\mathcal{P}$ describes motion, $\mathcal{E}$ tests whether a signal exists, and $\kappa$ tests whether mixing retains it.
 
-This is the first finding: a short learning trajectory looks like efficient convergence---but it may not be.
+The empirical design assigns a distinct role to each environment.
+510K supplies the motivating ambiguity through checkpoint-level path geometry.
+Toy Matching isolates relation-conditioned cancellation in a setting where the optimal actions are known.
+Overcooked tests the diagnostic protocol at its boundary: sparse zero returns make the chosen REINFORCE estimator identically zero, so reporting a numerical $\kappa$ would be a category error.
+Finally, 510K measurements under policy-gradient and TD update fields show that $\kappa$ is conditional on the estimator used to define $g_r$.
 
-To test whether a short path truly signals successful learning, we constructed a minimal synthetic \textbf{Toy} environment: a 2-action contextual bandit where an agent must match a hidden partner type.
-Here, the hidden configuration produced the \emph{longest} path ($0.48$ vs.\ $0.011$ for revealed), yet achieved chance-level return ($\approx 0$)---the agent meandered through policy space without making progress.
-The revealed configuration produced a short, direct path to optimal return ($\approx +19$).
-%
-\textbf{The path integral alone could not distinguish productive convergence from aimless drift.}
-
-This contradiction motivates our central contribution: a framework that supplements the path integral with a second diagnostic dimension.
-We formalize the underlying mechanism as \textbf{Information-Induced Gradient Contraction (IIGC)}.
-When relational variables are hidden, a policy gradient method computes gradients over trajectories where different hidden configurations are mixed within the same observation.
-If gradients from configuration $A$ and configuration $B$ point in opposing directions---one pulling the policy toward strategy $X$, the other toward strategy $Y$---the aggregated gradient cancels, producing a near-zero update.
-The policy moves little, not because it has converged, but because the learning signal has been erased.
-
-We introduce the \textbf{Relational Gradient Retention Ratio}, $\kappa$, to quantify this effect.
-$\kappa$ measures the alignment of REINFORCE gradients computed from rollouts under two distinct hidden configurations ($\kappa = 1$: gradients aligned; $\kappa \to 0$: gradients cancel).
-Coupled with the path integral $\mathcal{P}$, $\kappa$ yields a \textbf{Stable-or-Stuck diagnostic}: a two-dimensional test that separates four training regimes---stable convergence, productive exploration, information-induced stagnation, and aimless drift---using only trained policies and rollout access.
-
-We validate this framework across three environments of increasing complexity (Toy, Overcooked, 510K) and four algorithm families (PPO, A2C, DQN, SAC).
-In Toy, $\kappa$ cleanly separates the zero-gradient regime ($\kappa_{\rm HIDDEN}=0.039$) from aligned learning ($\kappa_{\rm REVEALED}=0.726$).
-In Overcooked with hidden partner roles, $\kappa$ registers gradient death ($\kappa=0.000$ across eight seeds), while visible roles permit stable learning ($\kappa=0.500$, reward $187$).
-In 510K, $\kappa$ reveals a moderate but consistent contraction effect under hidden teams.
-%
-The IIGC framework predicts that policy-gradient methods are uniquely vulnerable to gradient cancellation, while value-based methods should resist it due to their distinct gradient structure.
-We confirm this prediction: across all three environments, policy-gradient methods (PPO, A2C) show $\kappa_{\rm revealed} > \kappa_{\rm hidden}$, while value-based and actor-critic methods (DQN, SAC) show the reverse.
-%
-We contribute:
-(1)~the \textbf{IIGC framework}, formalizing how hidden relational information erases learning signals in MARL;
-(2)~$\kappa$, a lightweight, broadly computable metric for detecting this failure before committing to full-scale training;
-(3)~the \textbf{Stable-or-Stuck diagnostic}, pairing $\kappa$ with path integrals for trajectory-level diagnosis;
-and (4)~a three-environment, cross-algorithm validation establishing the framework's diagnostic scope.
-A short trajectory can lie; $\kappa$ tells you when to believe it.
+Our contributions are:
+(1) an exact retained-versus-canceled energy decomposition for gradients mixed across hidden relations;
+(2) a rollout-based estimator, $\kappa$, with explicit identifiability conditions and zero-energy handling;
+(3) a diagnostic protocol that resolves path-length ambiguity without equating stillness with convergence; and
+(4) controlled evidence across three environments, together with negative results that delimit what the diagnostic can claim.
+The contribution is a measurement principle, not a new optimizer: before explaining a learning path, verify that a usable gradient survived the information bottleneck.
 
 
 \section{Related Work}
 
-\textbf{Partial observability in MARL.}
-Partially observable stochastic games~\cite{oliehoek2016concise} provide the formal backdrop.
-Dec-POMDP methods address coordination under limited observability~\cite{lowe2017multiagent,foerster2018counterfactual}.
-Our focus is narrower and more actionable: we study \emph{hidden relational} information (teammate identity, partner type) and provide a measurable link between information structure and gradient dynamics, rather than designing algorithms to overcome partial observability.
+\textbf{Partial observability and relational aliasing.}
+Partially observable stochastic games and Dec-POMDPs formalize coordination with incomplete information~\cite{oliehoek2016concise,lowe2017multiagent,foerster2018counterfactual}.
+The older notion of perceptual aliasing already identified the core representational problem: observationally identical situations may require different actions~\cite{chrisman1992perceptual}.
+Recent diagnostics such as the $\lambda$-discrepancy test whether a learned state representation is Markovian~\cite{allen2024lambda}.
+We study a narrower failure: the aliased variable is a relation, and the object of interest is the gradient energy lost when relation-conditioned updates share parameters.
 
-\textbf{Training dynamics and diagnostic tools.}
-Most MARL work evaluates converged policies~\cite{papoudakis2019comparative}.
-A growing body advocates for trajectory-level analysis: behavioral characterizations of learning~\cite{ecoffet2021first}, loss-landscape visualization~\cite{li2018visualizing}, and checkpoint-level diagnostics~\cite{lu2022discovered}.
-The path integral, as used here, belongs to this tradition.
-We extend it by showing that a single trajectory metric can mislead, and by introducing $\kappa$ as a necessary second diagnostic dimension.
+\textbf{Gradient conflict and learning dynamics.}
+Gradient variance and optimization geometry are central in supervised learning and policy optimization~\cite{bottou2018optimization,schulman2015trust,schulman2017proximal}.
+Multi-task learning makes conflict explicit by comparing task gradients~\cite{yu2020gradient,zeng2021decentralized}; MARL adds credit assignment and non-stationarity~\cite{foerster2018counterfactual,hernandez2019emergent}.
+Our ratio is related to gradient alignment but answers a different question: it measures the energy retained by the exact mixture induced by an unobserved relation and is reported only when the conditional energy is non-zero.
 
-\textbf{Gradient analysis in RL.}
-Gradient variance and its effect on stability is well-studied in supervised learning~\cite{bottou2018optimization} and single-agent RL~\cite{schulman2015trust,schulman2017proximal}.
-In MARL, attention has focused on credit assignment~\cite{foerster2018counterfactual} and non-stationarity~\cite{hernandez2019emergent}.
-Our $\kappa$ metric bridges gradient analysis and information structure: it measures how hidden relational variables cause gradients from different contexts to cancel---a failure mode distinct from variance or non-stationarity.
-
-\textbf{Self-play and cooperation structures.}
-Self-play~\cite{tesauro1995temporal,silver2016mastering} and league training~\cite{vinyals2019grandmaster,lanctot2017unified} study training under competitive and cooperative dynamics.
-Environments with configurable cooperation structures~\cite{leibo2017multiagent,carroll2019utility} enable controlled studies of emergent social behavior.
-Our 510K environment contributes a testbed where cooperation structure is varied while holding game mechanics constant, enabling clean information-reveal interventions.
+\textbf{Trajectory diagnostics and cooperation.}
+Most empirical MARL comparisons emphasize final policies~\cite{papoudakis2019comparative}.
+Behavioral archives, loss-landscape views, and checkpoint analyses instead study the route taken during learning~\cite{ecoffet2021first,li2018visualizing,lu2022discovered}.
+Our path integral belongs to this family; our result is that geometry alone is non-identifying.
+Self-play and league training establish strong learning systems~\cite{tesauro1995temporal,silver2016mastering,vinyals2019grandmaster,lanctot2017unified}, while social-dilemma and human--AI benchmarks vary cooperation structure~\cite{leibo2017multiagent,carroll2019utility}.
+510K complements them with matched card mechanics and an intervention on team visibility.
 
 
-\section{The Information-Induced Gradient Contraction Framework}
+\section{Gradient Retention under Hidden Relations}
 
-Consider a partially observable multi-agent setting where a relational variable $r \in \{A, B\}$ is hidden from the policy $\pi_\theta$.
-The agent observes $o_t$ but not $r$.
-During training, episodes arise from a mixture of configurations $A$ and $B$, and the policy gradient is aggregated over this mixture.
+\subsection{Setup and Behavioral Motion}
 
-\subsection{Path Integral}
-
-For a policy $\pi$ trained for $K$ checkpoints, let $\mu^{(k)}_\pi \in \mathbb{R}^d$ be a behavioral feature-expectation vector computed from evaluation rollouts at checkpoint $k$.
-The \textbf{path integral} $\mathcal{P}(\pi)$ is the cumulative L2 distance traversed through feature space:
+Let $r\in\{A,B\}$ be a relational configuration and let the policy receive $o_t=h(s_t)$ but not $r$.
+The observation map is many-to-one whenever states from $A$ and $B$ share $o_t$ despite favoring different actions.
+For a policy $\pi_\theta$ evaluated under relation $r$, define the return-weighted score-function gradient
 \begin{equation}
-\mathcal{P}(\pi) = \sum_{k=2}^{K} \|\mu^{(k)}_\pi - \mu^{(k-1)}_\pi\|_2
-\label{eq:path}
-\end{equation}
-%
-$\mathcal{P}(\pi)$ captures how far the policy's behavioral signature moves during training.
-A short path suggests the policy changed little; a long path suggests extensive exploration or oscillation.
-Crucially, $\mathcal{P}(\pi)$ is \emph{directionless}: it cannot distinguish convergence from stagnation.
-
-\subsection{Gradient Cancellation under Partial Observability}
-
-When policy $\pi_\theta$ is trained on a balanced mixture of episodes from configurations $A$ and $B$, the gradient update aggregates signals from both:
-\begin{equation}
-g_{\text{mixed}} = \tfrac{1}{2}(g_A + g_B)
-\label{eq:mixed}
-\end{equation}
-Under full observability, $g_A$ and $g_B$ are computed from distinct observation spaces; the policy learns configuration-specific strategies.
-Under partial observability, the same parameters $\theta$ must serve both configurations through a coarser observation space, and $g_A$ and $g_B$ may oppose each other.
-We call this phenomenon \textbf{Information-Induced Gradient Contraction (IIGC)}: when $g_A \approx -g_B$, the aggregated gradient $g_{\text{mixed}} \approx 0$, and the policy receives no effective learning signal despite non-zero gradient energy in each configuration.
-
-A path integral alone cannot detect this failure. A short $\mathcal{P}$ may signal convergence (aligned gradients, rapid descent) or IIGC-induced paralysis (canceled gradients, no movement). This motivates a second diagnostic dimension.
-
-\subsection{Relational Gradient Retention Ratio $\kappa$}
-
-Let $g_A$ and $g_B$ be the REINFORCE policy gradients computed from $N$ evaluation rollouts under fixed configuration $A$ and $B$ respectively:
-\begin{equation}
-g_r = \mathbb{E}_{\tau \sim \pi, r}\!\left[ \nabla_\theta \log \pi_\theta(a_t|o_t) \cdot R(\tau) \right], \quad r \in \{A, B\}
+\begin{split}
+g_r &=
+\mathbb{E}_{\tau\sim\pi_\theta,r}
+\left[
+\sum_t \nabla_\theta\log\pi_\theta(a_t\mid o_t)\,G_t
+\right],\\[-2pt]
+&\hspace{5.5cm} r\in\{A,B\},
+\end{split}
 \label{eq:grad}
 \end{equation}
-where $R(\tau)$ is the discounted return.
-We define the \textbf{Relational Gradient Retention Ratio}:
+where $G_t$ is the discounted return-to-go.
+We use a balanced mixture to expose the mechanism; unequal mixture weights replace the arithmetic mean by the corresponding weighted mean.
+
+Behavioral motion is measured independently of the gradient.
+For checkpoints $k=1,\ldots,K$, let $\mu_\pi^{(k)}\in\mathbb{R}^d$ be the mean feature vector over evaluation rollouts.
+The path integral is
 \begin{equation}
-\kappa = \frac{\lVert (g_A + g_B)/2 \rVert^2}{(\lVert g_A \rVert^2 + \lVert g_B \rVert^2)/2}
-\label{eq:kappa}
+\mathcal{P}(\pi)=
+\sum_{k=2}^{K}
+\left\|\mu_\pi^{(k)}-\mu_\pi^{(k-1)}\right\|_2 .
+\label{eq:path}
 \end{equation}
+It records total movement, not direction, return, or optimality.
+Low $\mathcal{P}$ is therefore compatible with both convergence and paralysis; high $\mathcal{P}$ with both exploration and drift.
 
 \medskip
-\noindent\textbf{Design Motivation.}
-A diagnostic for gradient cancellation should satisfy several natural desiderata:
-(i)~it attains its maximum when $g_A$ and $g_B$ are perfectly aligned, indicating full gradient retention;
-(ii)~it approaches zero when $g_A \approx -g_B$, signaling complete cancellation;
-(iii)~it is invariant to the overall scale of the gradients, so that the diagnostic does not conflate large magnitudes with alignment;
-(iv)~it admits an additive decomposition into retained and canceled energy components, yielding a physically interpretable structure.
-The quantity $\kappa$ defined above satisfies all four requirements and is, up to a monotonic transformation, the simplest such measure.
+\noindent\textbf{Proposition 0 (Path-Length Non-Identification).}
+No decision rule based only on $\mathcal{P}$ can distinguish convergence from stagnation for all learning processes.
+For $\mathcal{P}=0$, a policy initialized at an optimum and a policy with an identically zero update generate the same constant feature path.
+For any $\mathcal{P}>0$, a directed path ending at an optimum and a loop returning to its initial behavior can be constructed with equal arc length.
+The result is elementary but consequential: adding more precise path measurements cannot recover information that path geometry does not contain.
+An independent signal about update direction or task value is necessary.
+
+\subsection{Information-Induced Gradient Contraction}
+
+With a balanced hidden relation, the expected update is
+\begin{equation}
+g_{\mathrm{mixed}}=\tfrac{1}{2}(g_A+g_B).
+\label{eq:mixed}
+\end{equation}
+If $g_A$ and $g_B$ oppose one another, mixing erases signal that is present conditionally.
+We call the loss of update energy caused by this many-to-one information map \textbf{Information-Induced Gradient Contraction}.
+
+Define the total relation-conditioned energy
+\begin{equation}
+\mathcal{E}=\frac{\|g_A\|^2+\|g_B\|^2}{2}
+\label{eq:energy}
+\end{equation}
+and, when $\mathcal{E}>0$, the \textbf{Relational Gradient Retention Ratio}
+\begin{equation}
+\kappa=
+\frac{\left\|(g_A+g_B)/2\right\|^2}{\mathcal{E}}.
+\label{eq:kappa}
+\end{equation}
+By convexity, $\kappa\in[0,1]$.
+It is scale-free under a common rescaling of $g_A$ and $g_B$, but it retains both their angle and relative magnitudes.
 
 \medskip
 \noindent\textbf{Proposition 1 (Pythagorean Decomposition).}
-Let $g_+ = \frac{g_A + g_B}{2}$ be the \textit{shared} gradient component (the signal that survives aggregation) and $g_- = \frac{g_A - g_B}{2}$ be the \textit{differential} component (the signal that is lost).
-Then:
+Let $g_+=(g_A+g_B)/2$ and $g_-=(g_A-g_B)/2$.
+Then
 \begin{equation}
-\frac{\|g_A\|^2 + \|g_B\|^2}{2} = \|g_+\|^2 + \|g_-\|^2
+\mathcal{E}=\|g_+\|^2+\|g_-\|^2,
+\qquad
+\kappa=\frac{\|g_+\|^2}{\|g_+\|^2+\|g_-\|^2}.
 \label{eq:pythagorean}
 \end{equation}
-Consequently, $\kappa = \|g_+\|^2 \,/\, (\|g_+\|^2 + \|g_-\|^2)$.
-Total gradient energy decomposes into a \textbf{retained} component $\|g_+\|^2$ that contributes to learning, and a \textbf{canceled} component $\|g_-\|^2$ that is erased by aggregation across hidden configurations.
+Thus conditional gradient energy decomposes exactly into a retained component $\|g_+\|^2$ and a differential component $\|g_-\|^2$ removed by aggregation.
+The identity follows by expanding $\|g_++g_-\|^2+\|g_+-g_-\|^2$; no distributional assumption is required.
+
+\medskip
+\noindent\textbf{Corollary 1 (Relation to Cosine Alignment).}
+Writing $\theta_g$ for the angle between non-zero $g_A$ and $g_B$,
+\begin{equation}
+\kappa=
+\frac{1}{2}
++
+\frac{\|g_A\|\,\|g_B\|\cos\theta_g}
+{\|g_A\|^2+\|g_B\|^2}.
+\label{eq:cosine}
+\end{equation}
+When the norms match, $\kappa=(1+\cos\theta_g)/2$.
+When one gradient is zero, $\kappa=1/2$ regardless of the direction of the other.
+Accordingly, $1/2$ does not by itself mean orthogonality.
 
 \medskip
 \noindent\textbf{Proposition 2 (Effective Learning Signal).}
-Under training with balanced configuration mixing $(p_A = p_B = 1/2)$, the expected per-step gradient is $g_{\text{mixed}} = g_+$.
-The effective gradient magnitude satisfies:
+Under balanced mixing,
 \begin{equation}
-\|g_{\text{mixed}}\|^2 = \kappa \cdot \frac{\|g_A\|^2 + \|g_B\|^2}{2}
+\|g_{\mathrm{mixed}}\|^2
+=
+\kappa\,\mathcal{E}.
 \label{eq:effective}
 \end{equation}
-Thus $\kappa$ directly scales the fraction of total gradient energy that survives aggregation.
-When $\kappa \to 0$, the effective learning signal vanishes irrespective of per-configuration gradient energy.
+Small $\kappa$ implies contraction only when $\mathcal{E}$ is appreciable.
+Conversely, $\mathcal{E}=0$ means that the chosen estimator contains no relation-conditioned signal to retain; $\kappa$ is then undefined, not zero.
+This distinction separates cancellation from absence.
 
-\noindent\textbf{Interpretation.}
-$\kappa \in [0, 1]$ classifies the gradient relationship across hidden configurations:
-$\kappa \approx 1$: $g_A \approx g_B$---gradients aligned; full learning signal retained.
-$\kappa \approx 0.5$: $g_A \perp g_B$ or one gradient dominates---moderate contraction.
-$\kappa \to 0$: $g_A \approx -g_B$---gradients cancel completely. The policy receives no effective learning signal; this is \textbf{information-induced gradient contraction}.
+\medskip
+\noindent\textbf{Extension to many relations.}
+The binary, balanced case is expository rather than essential.
+For relations $r=1,\ldots,m$ with mixture weights $p_r$, define
+\begin{equation}
+\bar g_p=\sum_{r=1}^{m}p_rg_r,
+\qquad
+\mathcal{E}_p=\sum_{r=1}^{m}p_r\|g_r\|^2.
+\label{eq:weighted}
+\end{equation}
+A weighted variance identity gives
+\begin{equation}
+\mathcal{E}_p
+=
+\|\bar g_p\|^2
++
+\sum_{r=1}^{m}p_r\|g_r-\bar g_p\|^2.
+\label{eq:weighted-decomp}
+\end{equation}
+Thus $\kappa_p=\|\bar g_p\|^2/\mathcal{E}_p$ retains the same interpretation:
+the first term is energy preserved by the actual training mixture, and the second is relation-specific energy removed by parameter sharing.
+Unlike an unweighted pairwise cosine average, $\kappa_p$ respects relation frequency.
+It also makes the intervention explicit: changing visibility may change each $g_r$, whereas rebalancing experience changes $p_r$.
+These are different mechanisms and should not be conflated.
+
+\medskip
+\noindent\textbf{Analytic Toy case.}
+Consider a Bernoulli policy with $\pi_\theta(a=1)=\sigma(\theta)$ and reward $+1$ for matching binary relation $r$ and $-1$ otherwise.
+With $r=1$,
+$g_1=2\sigma(\theta)(1-\sigma(\theta))$; with $r=0$,
+$g_0=-2\sigma(\theta)(1-\sigma(\theta))$.
+Each conditional gradient is non-zero away from saturation, but a balanced hidden mixture gives $\bar g=0$ and $\kappa=0$ for every $\theta$.
+The example isolates the point of the ratio: the optimizer is not failing to estimate a direction; the information structure makes the population direction vanish.
+
+\medskip
+\noindent\textbf{Proposition 3 (Partition Refinement).}
+Let $\mathcal{R}$ refine a coarser relation partition $\mathcal{C}$, and let
+$g_c=\mathbb{E}[g_r\mid c]$.
+Both partitions have the same mixed gradient $\bar g$, while Jensen's inequality gives
+\begin{equation}
+\sum_{r\in\mathcal{R}}p_r\|g_r\|^2
+\ \geq\
+\sum_{c\in\mathcal{C}}p_c\|g_c\|^2.
+\label{eq:refinement}
+\end{equation}
+Whenever both denominators are positive,
+$\kappa_{\mathcal{R}}\leq\kappa_{\mathcal{C}}$.
+A coarse partition can therefore hide differential gradient energy by averaging it inside a relation label; refining the partition can reveal conflict but cannot manufacture additional retained energy.
+This result makes relation choice part of the estimand.
+``Teammate type,'' ``teammate identity,'' and ``private card'' are not interchangeable partitions even when they describe the same episode.
+
+\subsection{Estimator Dependence}
+
+The preceding identities hold for any two vectors, but their scientific meaning depends on how those vectors are defined.
+For a policy-gradient estimator, $g_r^{\mathrm{PG}}$ changes action preferences.
+A TD method instead supplies
+\begin{equation}
+\begin{split}
+g_r^{\mathrm{TD}}
+&=
+\nabla_\theta
+\mathbb{E}_{(s,a,r',s')\sim\mathcal{D}_r}
+\left[
+\bigl(Q_\theta(s,a)-y\bigr)^2
+\right],\\
+y&=r'+\gamma\max_{a'}Q_{\mathrm{target}}(s',a').
+\end{split}
+\label{eq:tdgrad}
+\end{equation}
+
+\medskip
+\noindent\textbf{Proposition 4 (Gradient-Field Specificity).}
+There is no estimator-independent ordering between
+$\kappa(g_A^{\mathrm{PG}},g_B^{\mathrm{PG}})$ and
+$\kappa(g_A^{\mathrm{TD}},g_B^{\mathrm{TD}})$.
+The former compares action-preference updates; the latter compares prediction-error updates and also depends on replay distributions, features, and targets.
+Changing the update field can change both angle and norm ratio even for the same environment and policy.
+Hence cross-algorithm $\kappa$ values are meaningful only after naming the gradient estimator; a reversal is a property to explain, not evidence that one family is immune to hidden information.
 
 \subsection{The Stable-or-Stuck Diagnostic}
 
-The path integral $\mathcal{P}$ and the gradient retention ratio $\kappa$ span a diagnostic space yielding four regimes:
+The diagnostic is sequential.
+First report $\mathcal{E}$.
+If $\mathcal{E}$ is indistinguishable from zero, the estimator supplies no measurable signal and $\kappa$ is reported as N/A.
+Otherwise report $\kappa$ and interpret it relative to a matched visible-relation baseline.
+Finally use $\mathcal{P}$ to describe the resulting motion and return to check task success.
+
+These are diagnostic descriptions, not universal classifiers: no environment-independent threshold on $\mathcal{P}$ or $\kappa$ is assumed.
+
+\noindent\textbf{Diagnostic rule.}
+After the energy gate, low $\mathcal{P}$/high $\kappa$ is compatible with convergence, low/low with contraction-induced stagnation, high/high with coherent motion, and high/low with conflict or drift; return determines whether any such geometry is useful.
+
+\subsection{Finite-Sample Estimation Protocol}
+
+For $N_r$ rollouts from each relation, we estimate
+\begin{equation}
+\widehat g_r
+=
+\frac{1}{N_r}\sum_{i=1}^{N_r}
+\sum_t
+\nabla_\theta\log\pi_\theta(a_{it}\mid o_{it})\,G_{it}.
+\label{eq:estimator}
+\end{equation}
+The plug-in ratio $\widehat\kappa$ is not unbiased: both numerator and denominator are quadratic in noisy mean gradients.
+The error is most consequential near the energy boundary, where a small denominator can turn sampling noise into an apparently decisive ratio.
+Our reporting protocol therefore has five parts.
+
 \begin{enumerate}
-\item \textbf{Stable convergence} (high $\kappa$, low $\mathcal{P}$):
-  Gradients aligned; policy moves directly to optimum.
-\item \textbf{Productive exploration} (high $\kappa$, high $\mathcal{P}$):
-  Aligned gradients drive broad, directed behavioral change.
-\item \textbf{Information-induced stagnation} (low $\kappa$, low $\mathcal{P}$):
-  Gradient cancellation produces deceptive stillness---the policy is stuck, not converged.
-\item \textbf{Aimless drift} (low $\kappa$, high $\mathcal{P}$):
-  Unaligned gradients produce noisy, unproductive motion.
+\item Freeze one checkpoint and hold policy parameters fixed across relations.
+\item Intervene on $r$ while holding environment dynamics, reward, horizon, and rollout count fixed whenever the environment permits.
+\item Report $\|\widehat g_r\|^2$ and $\widehat{\mathcal{E}}$, not only their ratio.
+\item Obtain confidence intervals by resampling whole episodes within each relation; timestep resampling would break temporal dependence.
+\item Report $\kappa$ only when the lower confidence bound on $\mathcal{E}$ clears a predeclared numerical floor.
 \end{enumerate}
 
-The diagnostic requires only trained policies and rollout access.
-$\kappa$ can be computed post-hoc from any checkpoint using $\sim$30 evaluation rollouts per configuration.
+A useful falsification check splits rollouts from the \emph{same} relation into two batches.
+Their retention estimates sampling stability, not relational contraction.
+If split-batch agreement is low, the relation contrast is not yet estimable at the available rollout count.
+If split-batch agreement is high but cross-relation $\kappa$ is low, cancellation rather than Monte Carlo instability is the sharper explanation.
+This distinction is important for continuous or noisy relations, where two arbitrary rollout batches are not substitutes for two defined configurations.
+
+\subsection{Three Distinct Estimands}
+
+The phrase ``effect of hidden information'' can refer to three different quantities.
+Separating them prevents a diagnostic result from silently becoming a causal or performance claim.
+
+\textbf{Conditional conflict} is a property of one frozen policy:
+\begin{equation}
+\kappa(\pi;r)
+=
+\frac{\|\sum_r p_r g_r(\pi)\|^2}
+{\sum_r p_r\|g_r(\pi)\|^2}.
+\label{eq:conditional-estimand}
+\end{equation}
+It asks whether relation-specific updates agree at the current parameters.
+Toy Matching identifies this quantity because partner type can be fixed during otherwise matched rollouts.
+
+\textbf{Information effect} compares policies trained with and without observing $r$:
+\begin{equation}
+\Delta_\mathrm{info}
+=
+\mathbb{E}_{s}\!\left[\kappa(\pi^{\mathrm{visible}}_s;r)
+-\kappa(\pi^{\mathrm{hidden}}_s;r)\right],
+\label{eq:info-effect}
+\end{equation}
+where seed $s$, architecture, dynamics, reward, and checkpoints must be paired.
+This estimand includes how information changes the learned representation and visitation distribution.
+Comparing unrelated campaigns, input dimensions, or objectives does not identify it.
+
+\textbf{Performance mediation} asks whether a change in return is caused through changed retention rather than another consequence of visibility.
+That claim needs an intervention that changes $\kappa$ while controlling alternative paths, or a mediation design across matched seeds.
+None of our benchmark results alone establishes mediation.
+Accordingly, we use ``IIGC'' for measured loss of conditional update energy, reserve ``information effect'' for matched visibility contrasts, and report return as a separate outcome.
 
 
-\section{Environments and Setup}
+\section{Experimental Design}
 
-We validate the framework across three environments spanning increasing complexity.
+We ask three questions.
+\textbf{Q1: Can path geometry identify learning health?}
+\textbf{Q2: When relation-conditioned gradient energy exists, does $\kappa$ expose cancellation?}
+\textbf{Q3: What are the diagnostic's failure and transfer boundaries?}
+The environments are assigned to these questions rather than treated as interchangeable replications.
 
-\textbf{Toy Matching} (2 actions, 2 obs.\ dimensions).
-An agent selects $a \in \{0, 1\}$; a hidden partner type $p \in \{0, 1\}$ determines whether reward arrives when $a = p$ ($+1$) or $a \neq p$ ($-1$).
-Two conditions: \textsc{Revealed} ($p$ in observation, 1-hot) and \textsc{Hidden} ($p$ replaced by zero).
-Ten independent PPO training runs per condition (10K steps).
-This minimal environment isolates the purest form of IIGC.
+\textbf{510K} is a four-player trick-taking game with 300 discrete actions and 112-dimensional observations.
+Four modes share the base mechanics: \textsc{Single} is solo-competitive; \textsc{Static} uses fixed visible teams; \textsc{Dynamic} assigns teams through hidden red Aces; and \textsc{Obvious} uses \textsc{Dynamic}'s rules but appends a four-bit team indicator.
+For Q1, 22 independent MaskablePPO runs~\cite{raffin2021stable,huang2022action} comprise 5 \textsc{Single}, 5 \textsc{Static}, 4 \textsc{Dynamic}, and 8 \textsc{Obvious} seeds.
+We compute $\mathcal{P}$ from ten checkpoints at $10^5$-step intervals using seven normalized behavioral features (Appendix A).
 
-\textbf{Overcooked} (6 actions, 96 obs.\ dimensions).
-Two agents cooperate in a grid-world kitchen to cook and deliver soups.
-We introduce configurable partner roles: \textsc{Static} (partner's role---chef vs.\ waiter---visible as 1-hot observation) and \textsc{Dynamic} (partner role hidden, switches every 30 steps).
-Eight independent PPO runs per mode (1M steps, 8 parallel envs).
-Sparse reward (only on soup delivery).
+\textbf{Toy Matching} has two actions and a balanced binary partner type.
+The reward is $+1$ for matching the type and $-1$ otherwise.
+\textsc{Revealed} includes a one-hot type; \textsc{Hidden} replaces it with zeros.
+We train PPO for 10K steps over ten seeds per condition, then estimate relation-conditioned gradients from approximately 30 rollouts per type.
 
-\textbf{510K Card Game} (300 actions, 112 obs.\ dimensions).
-A four-player Chinese trick-taking game with four cooperation modes sharing identical card mechanics (Appendix~A):
-\textsc{Single} (solo-competitive), \textsc{Static} (fixed teams 0\&2 vs.\ 1\&3), \textsc{Dynamic} (teams by hidden red-Ace distribution), and \textsc{Obvious} (\textsc{Dynamic}'s card rules with visible team membership---an information-structure ablation).
-%
-All agents trained via MaskablePPO~\cite{raffin2021stable,huang2022action} with illegal-action masking.
-Hyperparameters: lr $3\times10^{-4}$, two hidden layers of 256 units, 2048-step buffer, batch 64, $\gamma=0.99$, GAE $\lambda=0.95$, entropy 0.01.
-Path integrals from $K=10$ checkpoints at $10^5$-step intervals, using seven behavioral features with VIF $<$~2:
-MyScore, MyHandSize, MyStrength, TrickScore, PassCount, ScoreSpread, SuppressionGap.
-%
-$\kappa$ measurements supplement PPO with A2C (8 seeds), DQN (8 seeds, buffer $10^5$), and SAC (2 seeds, discrete variant).
-All experiments use independent seeds 41--48 (22 total for 510K PPO: 5 \textsc{Single} + 5 \textsc{Static} + 4 \textsc{Dynamic} + 8 \textsc{Obvious}).
-Experiments run on a single NVIDIA GeForce RTX 5070 Ti Laptop GPU (12 GB) with PyTorch 2.x and sb3-contrib.
+\textbf{Overcooked} pairs the learner with a chef or waiter in a sparse-reward kitchen.
+\textsc{Static} reveals the partner role; \textsc{Dynamic} hides it and switches roles during an episode.
+We train PPO for 1M steps over eight seeds per mode.
+This experiment tests the energy gate because the return-weighted estimator in Eq.~\eqref{eq:grad} is exactly zero on zero-return rollouts.
+
+For the estimator boundary, we additionally report 510K gradients from A2C (eight seeds), DQN (eight), and a discrete SAC variant (two).
+These experiments are a separate campaign from the 22 path runs.
+We report means and standard deviations across seeds; Toy path lengths are illustrative single-seed traces and are labeled as such.
+Shared PPO hyperparameters are learning rate $3\times10^{-4}$, $\gamma=0.99$, GAE $\lambda=0.95$, batch size 64, and two 256-unit hidden layers.
 
 
 \section{Results}
 
-\subsection{510K: The Surprising Stability of Hidden Information}
+\subsection{Q1: Path Length Is Non-Identifying}
 
 \begin{table}[t]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccccc}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccc}
 \toprule
-Mode        & $n$ & $\mathcal{P}$ & $\bar{\mu}$ & $\bar{\sigma}^2$ & Curv.\ (med.) \\
+Mode & $n$ & $\mathcal{P}$ & Mean step & Step var. \\
 \midrule
-SINGLE      & 5 & $0.456 \!\pm\! 0.071$ & 0.051 & $6.1\!\times\!10^{-4}$ & $7.3\times$ \\
-STATIC      & 5 & $0.329 \!\pm\! 0.086$ & 0.037 & $3.1\!\times\!10^{-4}$ & $5.9\times$ \\
-OBVIOUS     & 8 & $0.328 \!\pm\! 0.062$ & 0.036 & $2.3\!\times\!10^{-4}$ & $6.9\times$ \\
-DYNAMIC     & 4 & $0.293 \!\pm\! 0.049$ & 0.033 & $2.8\!\times\!10^{-4}$ & $7.7\times$ \\
+SINGLE  & 5 & $0.456\pm0.071$ & 0.051 & $6.1{\times}10^{-4}$ \\
+STATIC  & 5 & $0.329\pm0.086$ & 0.037 & $3.1{\times}10^{-4}$ \\
+OBVIOUS & 8 & $0.328\pm0.062$ & 0.036 & $2.3{\times}10^{-4}$ \\
+DYNAMIC & 4 & $0.293\pm0.049$ & 0.033 & $2.8{\times}10^{-4}$ \\
 \bottomrule
 \end{tabular}
-\caption{Path integrals and drift-diffusion metrics across 510K cooperation modes.
-$\mathcal{P}$ decreases with cooperation strength (Spearman $r=-0.62$, $p=0.019$; Cohen's $d=2.67$ SINGLE vs.\ DYNAMIC).
-Step-size variance $\bar{\sigma}^2$ decreases monotonically.}
+\caption{Behavioral path statistics for 22 independent 510K PPO runs.
+The ordering is descriptive: modes differ in both objective and observability.}
 \label{tab:paths}
 \end{table}
-
-Table~\ref{tab:paths} reports the core 510K finding.
-The path integral decreases monotonically: $\textsc{Single} > \textsc{Static} \approx \textsc{Obvious} > \textsc{Dynamic}$.
-The \textsc{Dynamic} mode---where teammates are determined by hidden card distribution---produces the shortest trajectories.
-No \textsc{Dynamic} seed exceeds a path length of $0.37$, whereas four of five \textsc{Single} seeds exceed $0.44$.
-The drift-diffusion decomposition corroborates this: $\bar{\sigma}^2$ (step-size variance) decreases from $6.1\times10^{-4}$ (\textsc{Single}) to $2.8\times10^{-4}$ (\textsc{Dynamic}), a 2.2$\times$ reduction.
-
-\textbf{Isolating causation: the OBVIOUS ablation.}
-\textsc{Obvious} retains \textsc{Dynamic}'s card mechanics (red A as strongest single, red-A pair as strongest bomb, identical scoring) but reveals team membership as a 4-bit observation.
-Its path length ($0.328 \pm 0.062$) matches \textsc{Static} almost exactly ($\Delta = 0.001$).
-Its step-size variance ($2.3\times10^{-4}$) is the lowest of all conditions.
-This cleanly isolates \textbf{known-team information}---not red-A card hierarchy---as the causal driver of the stabilization effect.
-When team membership is visible, the training trajectory stabilizes regardless of the underlying card mechanics.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_path_lengths.pdf}
-\caption{Path integrals across 510K modes (22 seeds). Hidden-team (\textsc{Dynamic}) yields the shortest paths. \textsc{Obvious} ($n=8$) aligns with \textsc{Static}, confirming information structure as the causal driver. Error bars: $\pm 1$ std.}
+\caption{Behavioral path length across 510K modes.
+\textsc{Dynamic}, with hidden team identity, has the shortest mean path; \textsc{Obvious}, with the same card hierarchy and visible teams, lies near \textsc{Static}.
+Error bars show one standard deviation.}
 \label{fig:paths}
 \end{figure}
 
-At face value, these results suggest a clean narrative: stronger cooperation constraints compact the optimization landscape, producing shorter, lower-variance trajectories.
-The \textsc{Dynamic} trajectory looks efficient.
-But is it?
+Table~\ref{tab:paths} and Figure~\ref{fig:paths} reproduce the motivating pattern:
+$\textsc{Single}>\textsc{Static}\approx\textsc{Obvious}>\textsc{Dynamic}$ in mean path length.
+The \textsc{Single}--\textsc{Dynamic} standardized difference is large ($d=2.67$), and step-size variance also falls by $2.2\times$.
+This establishes less behavioral motion, not better learning.
+The modes change reward and termination rules as well as information, so the four-way ordering is not a causal dose-response curve.
+The matched-mechanics contrast, \textsc{Obvious} versus \textsc{Dynamic}, is directionally consistent with an information effect ($0.328$ versus $0.293$) but is underpowered and unpaired.
+The correct conclusion from 510K alone is therefore ambiguity: hidden relations can coexist with a short, low-variance path.
 
-\subsection{Toy: When Path Integrals Are Insufficient}
-
-We now test whether a short path always signals healthy learning.
-The Toy environment strips away all confounding dynamics, leaving only the minimal structure: a hidden binary partner type and two actions.
+\subsection{Q2: Toy Matching Identifies Contraction}
 
 \begin{table}[t]
 \centering
 \small
+\setlength{\tabcolsep}{5pt}
 \begin{tabular}{lcccc}
 \toprule
-Condition & $\mathcal{P}$ (Path) & $\kappa$ & Return & $n$ \\
+Condition & $\mathcal{P}$ & $\kappa$ & Return & $n$ \\
 \midrule
-REVEALED & 0.011 & $0.726 \pm 0.100$ & $+19.2 \pm 0.3$ & 10 \\
-HIDDEN   & 0.480 & $0.039 \pm 0.073$ & $-0.3 \pm 0.3$  & 10 \\
+REVEALED & 0.011 & $0.726\pm0.100$ & $19.2\pm0.3$ & 10 \\
+HIDDEN   & 0.480 & $0.039\pm0.073$ & $-0.3\pm0.3$ & 10 \\
 \bottomrule
 \end{tabular}
-\caption{Toy environment (PPO).
-HIDDEN produces a 44$\times$ longer path but zero learning ($\kappa\approx 0$, chance return).
-The path integral gives the \emph{opposite} diagnosis to $\kappa$. $\mathcal{P}$ from illustrative single-seed runs.}
+\caption{Toy PPO results.
+Path lengths are illustrative single-seed traces; $\kappa$ and return aggregate ten independent seeds.}
 \label{tab:toy}
 \end{table}
-
-Table~\ref{tab:toy} presents the diagnostic contradiction.
-In \textsc{Revealed} mode, the agent sees partner type and converges rapidly: $\mathcal{P}=0.011$, $\kappa=0.726$, return $\approx +19$.
-In \textsc{Hidden} mode, the agent cannot distinguish partner types.
-Gradients from the two configurations cancel, driving $\kappa$ to nearly zero ($0.039 \pm 0.073$).
-Yet the path integral is 44$\times$ \emph{longer} than \textsc{Revealed} ($0.48$ vs.\ $0.011$): the policy drifts aimlessly, receiving no coherent signal.
-The return confirms failure: chance level.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/kappa_figure.pdf}
-\caption{Toy $\kappa$ trajectories under REVEALED and HIDDEN conditions.
-REVEALED converges to aligned gradients ($\kappa\to 1$) within 2,000 steps; HIDDEN oscillates near zero for the entire run---permanent gradient cancellation invisible to the path integral alone.}
+\caption{Toy $\kappa$ by seed.
+Revealing partner type preserves most conditional gradient energy; hiding it drives the retained fraction toward zero.
+Dashed lines denote condition means.}
 \label{fig:kappa}
 \end{figure}
 
-\textbf{The diagnostic conflict across environments.}
-The path integral reports contradictory conclusions: in 510K, hidden information produces \emph{shorter} paths; in Toy, it produces \emph{longer} paths---yet neither case achieves effective learning in the hidden regime.
-%
-A researcher observing only $\mathcal{P}$ in 510K might conclude hidden teammates stabilize training; observing only $\mathcal{P}$ in Toy might conclude the opposite.
-Only $\kappa$ provides a consistent account:
-510K \textsc{Dynamic} exhibits moderate $\kappa$ ($0.44$--$0.52$, see Sec.~\ref{sec:cross})---partial gradient contraction with residual learning---while Toy \textsc{Hidden} exhibits $\kappa \approx 0$---complete gradient death.
-The path integral alone cannot make this distinction.
+Toy Matching reverses the 510K geometry.
+The hidden policy travels $44\times$ farther in the illustrative trace, yet its return stays at chance.
+Thus neither a short nor a long path has a fixed implication for learning health.
+The conditional gradients supply the missing identification:
+revealing type yields $\kappa=0.726\pm0.100$, while aliasing the two types yields $0.039\pm0.073$.
+Seven of ten hidden seeds are below $0.005$; all revealed seeds exceed $0.54$.
+The near-zero retained fraction and chance return agree even though $\mathcal{P}$ points in the opposite direction.
 
-\subsection{Overcooked: Validating the Joint Diagnostic}
+This experiment also distinguishes contraction from sampling variance.
+The two partner types have opposite optimal actions by construction, and each conditional rollout distribution supplies a non-zero learning signal.
+Increasing rollout count can reduce estimation error around $g_A$ and $g_B$, but it cannot change the fact that their balanced expectation cancels when type is unobserved.
 
-The Toy environment is deliberately minimal.
-Overcooked tests whether the joint diagnostic scales to a realistic cooperative benchmark.
+\subsection{Q3: The Zero-Energy Boundary}
 
 \begin{table}[t]
 \centering
 \small
-\begin{tabular}{lccc}
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
 \toprule
-Mode    & $\kappa$ (PPO) & Return & $n$ \\
+Mode & Reported $\kappa$ & Chef ret. & Waiter ret. & Energy status \\
 \midrule
-STATIC  & $0.500 \pm 0.000$ & $187$  & 8 \\
-DYNAMIC & $0.000 \pm 0.000$ & $0$    & 8 \\
+STATIC  & $0.497\pm0.006$ & 186.8 & 43.5 & One-sided in 4/8 \\
+DYNAMIC & N/A & 0.0 & 0.0 & Zero in 8/8 \\
 \bottomrule
-\end{tabular}
-\caption{Overcooked: configurable partner roles (PPO, 1M steps).
-DYNAMIC $\kappa=0.000\pm0.000$ across all 8 seeds---complete gradient death.
-STATIC shows aligned gradients ($\kappa=0.500$) and positive return.}
+\end{tabular}}
+\caption{Overcooked PPO stress test over eight seeds.
+Zero return makes the return-weighted gradients, and hence $\mathcal{E}$, zero in \textsc{Dynamic}; $\kappa$ is undefined.
+Static averages include four seeds with substantial return under both partner roles.}
 \label{tab:overcooked}
 \end{table}
 
-In Overcooked (Table~\ref{tab:overcooked}), the contrast is unambiguous.
-Under \textsc{Static} (visible partner role), the agent learns complementary behavior: $\kappa=0.500$, return $187$.
-Under \textsc{Dynamic} (hidden partner role, switching mid-episode), $\kappa$ is identically zero across all eight independent seeds.
-The agent cannot simultaneously optimize for cooking (when paired with a waiter) and delivering (when paired with a chef) because it cannot distinguish which partner it has.
-Both strategies collapse, reward is zero, $\kappa$ registers complete gradient death.
+Overcooked does not provide evidence of cancellation; it provides evidence for the energy gate.
+Every \textsc{Dynamic} seed has zero return under both frozen partner evaluations.
+Equation~\eqref{eq:grad} then gives $g_A=g_B=0$ and $\mathcal{E}=0$.
+A numerical implementation with a clamped denominator returns a sentinel near zero, but interpreting that value as $\kappa\approx0$ would confuse absent gradient energy with opposing gradients.
+We report N/A instead.
 
-\textbf{Why the path integral alone is insufficient here.}
-A short path in Overcooked \textsc{Dynamic} could result from gradient cancellation (stuck) or from rapid convergence to a compromise strategy.
-$\kappa$ resolves the ambiguity.
-In the Stable-or-Stuck taxonomy, Overcooked \textsc{Dynamic} falls squarely in the \textbf{information-induced stagnation} quadrant (low $\kappa$, short path), while Overcooked \textsc{Static} occupies \textbf{stable convergence} (high $\kappa$, short path).
-Toy \textsc{Hidden} and 510K \textsc{Dynamic} occupy different quadrants entirely, despite both exhibiting hidden relational information---the joint diagnostic distinguishes cases that any single metric would conflate.
+The \textsc{Static} mean, $0.497$, requires equal care.
+Four seeds obtain substantial return under both partner roles; the other four succeed almost exclusively with the chef.
+When one conditional gradient dominates, Corollary~1 forces $\kappa$ toward $1/2$ even without orthogonality.
+Overcooked therefore supports a protocol-level conclusion: report conditional energy and return alongside the ratio.
+It does not support the stronger claim that hidden roles caused measured cancellation.
 
-\subsection{Cross-Algorithm $\kappa$ Signatures}
+\subsection{Objective-Dependent Retention}
 \label{sec:cross}
-
-Table~\ref{tab:cross} reports $\kappa$ across four algorithm families on 510K.
 
 \begin{table}[t]
 \centering
 \small
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{llccc}
 \toprule
-Algorithm & Family        & $\kappa_{\rm SINGLE}$ & $\kappa_{\rm DYNAMIC}$ & $n$ \\
+Estimator & Update field & $\kappa_{\rm SINGLE}$ & $\kappa_{\rm DYNAMIC}$ & $n$ \\
 \midrule
-A2C       & Policy-grad   & $0.644 \pm 0.201$ & $0.519 \pm 0.060$ & 8 \\
-PPO       & Policy-grad   & $0.519^\dagger$   & $0.444 \pm 0.069$ & 9 \\
-DQN       & Value-based   & $0.797 \pm 0.123$ & $0.917 \pm 0.064$ & 8 \\
-SAC       & Actor-critic  & $0.504 \pm 0.038$ & $0.540 \pm 0.069$ & 2 \\
+A2C & Policy grad. & $0.644\pm0.201$ & $0.519\pm0.060$ & 8 \\
+DQN & TD loss      & $0.797\pm0.123$ & $0.917\pm0.063$ & 8 \\
+SAC & Hybrid       & $0.542\pm0.060$ & $0.569\pm0.017$ & 2 \\
 \bottomrule
-\multicolumn{5}{l}{\footnotesize $^\dagger$PPO SINGLE $\kappa$ from one salvaged self-play run.} \\
 \end{tabular}
-\caption{Cross-algorithm $\kappa$ on 510K.
-Policy-gradient methods (PPO, A2C): $\kappa_{\rm SINGLE} > \kappa_{\rm DYNAMIC}$, consistent with IIGC.
-Value-based and actor-critic methods (DQN, SAC): $\kappa_{\rm DYNAMIC} > \kappa_{\rm SINGLE}$ (reversal).}
+\caption{510K retention under different update fields.
+Rows are not a common algorithm score: each defines $g_r$ through a different objective.
+SAC is exploratory ($n=2$).}
 \label{tab:cross}
 \end{table}
 
-Policy-gradient methods (PPO, A2C) exhibit the expected IIGC pattern: $\kappa_{\rm revealed} > \kappa_{\rm hidden}$.
-The effect is moderate in 510K ($\Delta\kappa \approx 0.12$--$0.13$) compared to Toy and Overcooked, consistent with the card game's richer observation space providing auxiliary cues that partially disambiguate teammate identity.
+Table~\ref{tab:cross} shows why estimator naming is substantive.
+For A2C policy gradients, hiding team identity lowers the retained fraction by $0.125$.
+For DQN's TD-loss field, the direction reverses by $0.120$; the two-seed SAC result is also slightly higher under \textsc{Dynamic}.
+Proposition~3 precludes reading this as policy-gradient vulnerability versus value-based immunity.
+The TD vectors reflect prediction residuals under a replay distribution, not the action-preference mixture in Eq.~\eqref{eq:grad}.
+The reversal instead establishes a boundary: $\kappa$ characterizes a specified update field.
 
-Value-based and actor-critic methods (DQN, SAC) show the \emph{opposite} pattern: $\kappa_{\rm DYNAMIC} > \kappa_{\rm SINGLE}$.
+We exclude the available 510K PPO contrast from this table because the visible side contains only one recovered run while \textsc{Dynamic} contains nine.
+Vanilla REINFORCE is similarly inconclusive: its across-seed standard deviation exceeds $0.23$ in both modes and several runs have zero or one-sided gradient energy.
+These negative results do not vanish under better prose; they limit the algorithm-level claim to the matched A2C and DQN measurements.
 
-\medskip
-\noindent\textbf{Proposition 3 (Gradient Structure Distinction).}
-Let $g_A^{\,\text{PG}}, g_B^{\,\text{PG}}$ be REINFORCE gradients and $g_A^{\,\text{TD}}, g_B^{\,\text{TD}}$ be TD-loss gradients for the same policy $\pi_\theta$ on configurations $A$ and $B$.
-If the optimal policies under $A$ and $B$ differ substantially ($g_A^{\,\text{PG}} \approx -g_B^{\,\text{PG}}$), then $\kappa_{\text{PG}} \to 0$.
-In contrast, the TD-loss gradient for a shared Q-function $Q_\theta$ satisfies:
-\begin{equation}
-g_r^{\,\text{TD}} = \nabla_\theta \; \mathbb{E}_{(s,a,r',s') \sim \mathcal{D}_r}\!\left[\bigl(Q_\theta(s,a) - y\bigr)^2\right]
-\label{eq:tdgrad}
-\end{equation}
-where $y = r' + \gamma \max_{a'} Q_{\text{target}}(s', a')$ is the TD target.
-Since the Q-function must predict values for \emph{both} configurations from a shared parameterization, $g_A^{\,\text{TD}}$ and $g_B^{\,\text{TD}}$ both push toward representations that minimize prediction error across the mixture.
-Consequently, $g_A^{\,\text{TD}}$ and $g_B^{\,\text{TD}}$ tend toward alignment rather than opposition: $\kappa_{\text{TD}}$ remains bounded away from zero and may increase when the configuration mixture is balanced (as observed in \textsc{Dynamic}).
-This structural distinction---PG gradients reflect \emph{action preference}; TD gradients reflect \emph{prediction accuracy}---explains the systematic reversal across DQN and SAC in Table~\ref{tab:cross}.
+\subsection{Robustness and Claim Audit}
 
-\textbf{Reinforce collapse.}
-The vanilla REINFORCE algorithm (not shown in Table~\ref{tab:cross}) exhibits $\kappa_{\rm SINGLE}=0.487 \pm 0.312$ and $\kappa_{\rm DYNAMIC}=0.605 \pm 0.238$ on 510K ($n=8$).
-The high variance ($\sigma > 0.2$ in both modes) precedes convergence failure: despite 20,000 training episodes, the agent fails to achieve stable reward ($<20$ vs.\ $>100$ for converged PPO).
-High $\kappa$ variance is an early warning signal: if gradient alignment varies widely across seeds, the training process is fundamentally unstable, regardless of the mean $\kappa$.
+Three checks separate stable evidence from attractive interpretation.
+First, the 510K path ordering does not depend on one hand-designed coordinate:
+deleting any of the seven behavioral features preserves
+$\textsc{Single}>\textsc{Static}>\textsc{Dynamic}$ in all seven leave-one-feature-out analyses.
+This supports robustness to feature omission, but not invariance to a different representation.
 
-\textbf{Practical implication.}
-$\kappa$ captures structural differences between algorithm families in how they interact with information structure.
-A practitioner can compute $\kappa$ on a small-scale version of a partially observable multi-agent task to anticipate which algorithm family's gradient structure is naturally compatible with the information regime---before committing to large-scale training.
-This cross-algorithm analysis is preliminary (SAC: 2 seeds; DQN Overcooked: failed to converge), but the pattern is systematic across both 510K and Toy measurements.
+Second, the Toy contrast is not driven by its mean.
+The smallest revealed PPO value is $0.547$; the largest hidden value is $0.235$.
+An independent A2C campaign repeats the direction
+($0.842\pm0.025$ revealed versus $0.195\pm0.352$ hidden, ten seeds each), but two hidden seeds retain high energy and make the variance large.
+We therefore use PPO for the quantitative claim and A2C only as a directional replication.
 
-\subsection{Continuous Information Reveal: A Non-Monotonic $\kappa$ Curve}
-
-We further isolate the causal effect of information availability through a \textbf{continuous reveal} intervention.
-Using the 510K OBVIOUS mode with a 4-bit teammate-indicator appended to the observation, we train PPO agents at five information levels:
-randomly masking each indicator bit with probability $p \in \{0, 0.25, 0.5, 0.75, 1.0\}$ during training (2 seeds per level, $10^6$ steps each).
-
-The resulting $\kappa$ values form a striking \textbf{non-monotonic curve}:
-\[
-\begin{aligned}
-\kappa_{0\%} &= 0.534 \;\to\; \kappa_{25\%} = 0.446 \;\to\; \kappa_{50\%} = 0.514 \\
-&\to\; \kappa_{75\%} = 0.324 \;\to\; \kappa_{100\%} = 0.616
-\end{aligned}
-\]
-
-Three observations emerge:
-
-\begin{enumerate}
-\item \textbf{Partial information can be worse than no information.}
-$\kappa_{25\%} (0.446) < \kappa_{0\%} (0.534)$---when team information is revealed only $25\%$ of the time, gradient contraction is \textit{more severe} than when information is fully hidden.
-The policy receives occasional, unreliable cues that disrupt the consistent ``ignore-team'' strategy learned under complete hiding.
-
-\item \textbf{The maximum-penalty point is 75\%, not 50\%.}
-$\kappa_{75\%} = 0.324$ is the global minimum, significantly below the 0\% baseline ($p < 0.05$ by one-tailed $t$-test against $\kappa_{0\%}$=0.534).
-We hypothesize this is the ``almost-right'' regime: the agent learns to \textit{depend} on the team information (which is correct 75\% of the time), but the 25\% error rate introduces destructive gradient updates when the information is wrong---pulling the policy away from its intended specialization.
-This is more damaging than the 50\% regime, where the agent cannot develop a consistent dependence on the noisy signal.
-
-\item \textbf{Full information produces the highest $\kappa$.}
-$\kappa_{100\%} = 0.616$ exceeds all partial-information conditions, confirming that complete, consistent information eliminates gradient contraction.
-\end{enumerate}
+Third, every ratio is checked against the update that produced it.
+The Overcooked zeros fail the energy gate.
+The DQN values pass a different scientific test than the A2C values because they use TD-loss gradients.
+The unmatched PPO baseline, two-seed SAC sweep, and same-condition reveal
+audit in Figure~\ref{fig:split-batch} remain exploratory.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_reveal.pdf}
-\caption{$\kappa$ reveals a non-monotonic response to partial information disclosure on 510K (PPO, 2 seeds/point, $10^6$ steps). 75\% reveal produces the strongest gradient contraction ($\kappa=0.324$, 39\% below baseline), worse than complete information hiding.}
-\label{fig:reveal}
+\caption{Split-batch retention across five 510K reveal conditions
+($n=2$; bars show one standard deviation).
+Same-condition batches audit sampling consistency, not relation-conditioned
+retention or a causal information effect.}
+\label{fig:split-batch}
 \end{figure}
 
-Figure~\ref{fig:reveal} visualizes this non-monotonic relationship.
-This finding has practical significance for MARL system design: \textit{incrementally improving an agent's information access can worsen training before improving it}.
-$\kappa$ detects this regime, providing a diagnostic against premature or noisy information disclosure.
-
-
-\section{Discussion}
+Table~\ref{tab:evidence} records this claim hierarchy.
 
 \begin{table}[t]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{lcccc}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{
+>{\raggedright\arraybackslash}p{0.20\columnwidth}
+>{\raggedright\arraybackslash}p{0.34\columnwidth}
+>{\raggedright\arraybackslash}p{0.34\columnwidth}}
 \toprule
-Condition & $\kappa$ & $\mathcal{P}$ & Regime & Result \\
+Evidence & Supports & Does not support \\
 \midrule
-Toy REV.\  & 0.73 & Short  & Stable convergence   & Optimal \\
-Toy HID.\  & 0.04 & Long   & Aimless drift        & Failure \\
-OC STATIC  & 0.50 & ---    & Stable convergence   & Optimal \\
-OC DYNAMIC & 0.00 & Short  & Info.\ stagnation    & Failure \\
-510K STATIC& 0.52 & Medium & Product.\ exploration & Converged \\
-510K DYNAMIC& 0.44 & Short  & Conserv.\ convergence & Partial \\
+510K paths &
+Mode-dependent motion &
+Convergence or causal mechanism \\
+Toy PPO &
+Cancellation under controlled aliasing &
+Benchmark-wide prevalence \\
+Overcooked &
+Need for the energy gate &
+Measured cancellation \\
+510K A2C/DQN &
+Estimator-dependent retention &
+Universal algorithm ranking \\
 \bottomrule
-\end{tabular}}
-\caption{Stable-or-Stuck classification across environments.
-Short paths occur under both convergence (high $\kappa$) and stagnation (low $\kappa$).
-Only the joint diagnostic discriminates.}
-\label{tab:diagnosis}
+\end{tabular}
+\caption{The inferential role of each experiment.
+No result is asked to establish both mechanism and generality.}
+\label{tab:evidence}
 \end{table}
 
-\textbf{When does a short trajectory lie?}
-Table~\ref{tab:diagnosis} synthesizes the three-environment evidence.
-A short trajectory is honest when $\kappa$ is high: Toy \textsc{Revealed} and Overcooked \textsc{Static} converge rapidly with aligned gradients.
-It lies when $\kappa$ is low: Overcooked \textsc{Dynamic} registers zero gradient retention across all eight seeds despite a short behavioral path.
-The intermediate case---510K \textsc{Dynamic}---falls between: residual $\kappa$ enables partial convergence, but the short path overstates the policy's competence.
-The conventional interpretation (short path $=$ stable convergence) fails in the low-$\kappa$ regime.
+\subsection{What Would Falsify IIGC?}
 
-\textbf{$\kappa$ as a practical diagnostic.}
-$\kappa$ is lightweight, post-hoc, and broadly computable across algorithm families (though its interpretation depends on gradient structure, as shown in Section~\ref{sec:cross}).
-It provides three complementary signals:
-(1)~\textbf{direction}: $\kappa_R > \kappa_H$ indicates IIGC from hidden information;
-(2)~\textbf{magnitude}: $\kappa \to 0$ signals near-complete gradient cancellation;
-(3)~\textbf{stability}: high $\kappa$ variance ($\sigma > 0.2$) predicts convergence failure.
-  Although $\kappa$ arises from our theoretical analysis of IIGC, its computation requires only rollout access and naturally lends itself to practical diagnosis.
-We envision a practical workflow: a practitioner trains an agent for a small number of steps (roughly $10\%$ of a full run), measures $\kappa$, and decides whether to proceed, adjust the observation scheme, or switch algorithms---potentially reducing unnecessary computation on configurations where gradient cancellation precludes effective learning.
+The framework is falsifiable at three levels.
+At the algebraic level, if the measured mixed update is not the weighted sum of the reported conditional updates, the relation partition or gradient implementation is wrong.
+At the estimator level, if cross-relation $\kappa$ remains low after revealing $r$ to an expressive policy and split-batch agreement is equally low, sampling error is a more parsimonious account than information-induced contraction.
+At the task level, if low $\kappa$ coexists with high return because a compromise policy is optimal under the mixture, contraction is real but not harmful.
+IIGC predicts lost update energy; it does not assert that every lost component is needed for the mixture objective.
 
-\subsection{Case Study: Diagnosing a Noisy Sensor}
+The last case matters in cooperative games.
+Two relation-specific optima may disagree while a shared policy is still adequate.
+Conversely, high $\kappa$ can accompany low return when both conditional gradients align toward a poor local solution.
+Return, energy, retention, and path length answer different questions.
+A valid empirical story preserves those distinctions rather than forcing them into a single score.
 
-The following is an illustrative usage example rather than an additional experimental result. It demonstrates how a practitioner might use $\kappa$ to diagnose and repair a training configuration that is underperforming for an unexpected reason.
 
-\textbf{Scenario.}
-A practitioner is training PPO on 510K with hidden teammate information (0\% reveal baseline, $\kappa = 0.534$).
-To improve training, she adds a sensor that partially reveals teammate identity.
-Due to implementation noise, the sensor is only 75\% accurate: three of the four teammate-indicator bits are correct on average, but one is randomly masked per timestep.
+\section{Discussion}
 
-\textbf{Symptom.}
-After installing the sensor, training becomes \textit{worse}---policy updates oscillate, and the agent fails to develop a consistent strategy.
-She computes $\kappa$ to diagnose the cause:
-\[
-\kappa_{\text{before}} = 0.534 \quad \longrightarrow \quad \kappa_{\text{after}} = 0.324 \;\;(\text{39\% drop})
-\]
-The drop in $\kappa$ signals that the new sensor is \textit{increasing} gradient contraction rather than reducing it.
-The agent has learned to depend on the sensor's output, but the 25\% error rate causes destructive gradient updates when the information is wrong---pulling the policy away from its learned specialization.
-This is more damaging than having no sensor at all (0\%), where the agent commits to a single consistent strategy.
+\textbf{What the diagnostic identifies.}
+A path integral answers ``how much did behavior move?''
+The energy gate answers ``did the chosen estimator contain a conditional signal?''
+Only after that gate does $\kappa$ answer ``how much survived relation mixing?''
+This ordering prevents two common errors: calling a zero-gradient run cancellation, and calling a short path convergence.
+Toy demonstrates the intended use because the conditional energy, optimal actions, and return are all identifiable.
+510K demonstrates why the question arises.
+Overcooked demonstrates when the ratio must be withheld.
 
-\textbf{Intervention.}
-$\kappa$'s diagnosis suggests two fixes, both of which the continuous reveal reference curve supports:
-\begin{enumerate}
-\item \textbf{Remove the sensor.} If 100\% accuracy is not achievable, removing the noisy signal returns training to the 0\% baseline ($\kappa = 0.534$).
-\item \textbf{Fix the sensor.} Upgrading to fully reliable teammate identification (100\% reveal) raises $\kappa$ to $0.616$---a 90\% improvement over the noisy sensor and a 15\% improvement over the no-sensor baseline.
-\end{enumerate}
+\textbf{Use and intervention.}
+The diagnostic requires rollout access under identifiable relations, not gradients saved during training.
+It can therefore be applied to a checkpoint before a full training campaign.
+A low $\kappa$ relative to a matched visible-relation baseline motivates an information intervention---for example, exposing team identity or learning a memory state---but does not prove that any particular repair will improve return.
+Likewise, cross-estimator comparisons may motivate algorithm choice only after the update fields and energy scales are made comparable.
+The measurement is a mechanism check, not an early-stopping oracle.
 
-\textbf{Outcome.}
-The practitioner implements Option 2 (feasible in 510K via the OBVIOUS mode).
-After the fix, $\kappa$ rises from $0.324$ to $0.616$, and training stabilizes.
-$\kappa$ served three roles: (1)~detecting that the sensor was harmful, (2)~identifying the mechanism (gradient contraction from inconsistent information), and (3)~verifying that the intervention succeeded.
+\textbf{Limits.}
+First, $\kappa$ requires relation-conditioned rollouts; a continuously valued or unobserved relation must be identified or discretized before measurement.
+Second, the balanced two-relation analysis does not cover arbitrary mixture weights, although the energy identity extends by replacing the mean with a weighted projection.
+Third, the 510K path integral depends on seven domain features; leave-one-feature-out tests preserve the reported ordering, but a representation-independent path metric remains open.
+Fourth, the empirical campaigns are uneven: the 510K path and gradient studies use different checkpoints, the PPO visible baseline is incomplete, SAC has two seeds, and Overcooked lacks a comparable behavioral path.
+Fifth, $\kappa$ depends on the estimator, reward scale through relative gradient magnitudes, and rollout distribution.
+Broader tests on standard hidden-information benchmarks such as Hanabi or SMAC are needed before claiming generality.
 
-\textbf{Takeaway.}
-This workflow---measure $\kappa$, diagnose, intervene, remeasure---illustrates how $\kappa$ can serve as a debugging tool for MARL system design.
-The continuous reveal curve provides a reference against which any new observation scheme can be benchmarked before committing to full-scale training.
+\textbf{Parameterization and metric choice.}
+The Euclidean norm in Eq.~\eqref{eq:kappa} is not invariant to a nonlinear reparameterization of the policy network.
+The comparison is therefore valid across relations for a fixed architecture and checkpoint, but raw values should not be compared across parameterizations as though they lived in a common geometry.
+For any fixed positive semidefinite metric $M$, the construction generalizes to
+\begin{equation}
+\mathcal{E}_M=\sum_r p_r g_r^\top M g_r,
+\qquad
+\kappa_M=\frac{\bar g^\top M\bar g}{\mathcal{E}_M}.
+\label{eq:metric}
+\end{equation}
+The weighted decomposition in Eq.~\eqref{eq:weighted-decomp} still holds in the $M$-seminorm.
+Choosing $M$ from the inverse Fisher information would measure retention in a local policy-distribution geometry rather than raw parameter coordinates, but estimating that metric reliably is a separate problem.
+We use Euclidean energy and keep architecture fixed; we do not claim reparameterization invariance.
 
-\textbf{Limitations.}
-$\kappa$ requires two identifiable hidden configurations for comparison; continuous or unenumerable hidden variables require discretization.
-The behavioral path integral depends on feature design---our seven 510K features are interpretable but domain-specific.
-Our cross-algorithm measurements are preliminary: DQN and SAC results on Overcooked remain incomplete, and PPO $\kappa$ on 510K is limited by training infrastructure issues (NumPy 2.x incompatibility with sb3-contrib).
-Validation is restricted to three environments; broader testing on standard MARL benchmarks (Hanabi, SMAC) would strengthen generalizability.
+\textbf{Estimator controls.}
+A common positive scaling of both conditional gradients cancels in $\kappa$, but relation-specific reward normalization does not.
+Rollout horizon, discount, advantage construction, action masks, and baseline must therefore match across $r$.
+An action-independent control variate leaves the population policy gradient unchanged, yet can change finite-sample $\widehat\kappa$ by changing covariance.
+For TD gradients, replay composition and target-network age are equally part of the measurement.
+These are not implementation footnotes: they specify which vector field the ratio describes.
 
-\textbf{Future work.}
-(1)~Apply the Stable-or-Stuck diagnostic to MARL benchmarks where hidden relational information is a known challenge (Hanabi, hidden-role card games).
-(2)~Develop an online variant of $\kappa$ monitored during training to trigger information-reveal interventions or early stopping.
-(3)~Characterize $\kappa$ signatures for additional algorithm families (deterministic policy gradients, QMIX, multi-agent transformers) to build a systematic algorithm-information compatibility taxonomy.
-(4)~Investigate whether $\kappa$ predicts the benefit of auxiliary tasks (e.g., teammate-identity prediction) before they are added to the training objective.
-(5)~Extend the Pythagorean decomposition to $n$-way relational configurations.
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{
+>{\raggedright\arraybackslash}p{0.19\columnwidth}
+>{\raggedright\arraybackslash}p{0.35\columnwidth}
+>{\raggedright\arraybackslash}p{0.34\columnwidth}}
+\toprule
+Observed pattern & Next measurement & Not yet justified \\
+\midrule
+Zero energy &
+Audit reward, coverage, and estimator &
+Calling the failure cancellation \\
+Unstable split &
+Add rollouts or variance reduction &
+Comparing relations \\
+Low cross-$r$ $\kappa$ &
+Reveal $r$ or add memory in a matched run &
+Claiming return will improve \\
+High $\kappa$; low return &
+Audit representation, credit, and objective &
+Ruling out learning failure \\
+Reversal &
+Match data and update fields &
+Ranking algorithm families \\
+\bottomrule
+\end{tabular}
+\caption{Operational use of the diagnostic.
+Each pattern determines a next measurement, not an automatic intervention.}
+\label{tab:actions}
+\end{table}
+
+\textbf{Scope of the claim.}
+The framework does not assert that hidden information always lowers $\kappa$, that low $\kappa$ always lowers return, or that a particular optimizer repairs contraction.
+It establishes an exact accounting identity, a conditional measurement protocol, and one controlled case where relational aliasing erases an otherwise non-zero update.
+The benchmark studies probe transfer and expose failure conditions.
+This narrower statement is also more useful: it says which quantity can be measured, which controls make the comparison interpretable, and which result would falsify the mechanism.
+
+\textbf{Design implications.}
+The first intervention depends on which gate fails.
+When $\mathcal{E}\approx0$, changing observation visibility may be premature: the return estimator, reward density, or state coverage supplies no conditional direction to compare.
+When energy is present and split-batch agreement is high but cross-relation $\kappa$ is low, the conflict is localized to the relation partition.
+Then exposing $r$, adding memory, or conditioning the policy on an inferred relation is a targeted test.
+The aim is not to maximize $\kappa$ in isolation, but to restore a direction that improves the mixture objective.
+
+Changing the optimizer answers a different question.
+Clipping, replay, advantage estimation, or a value objective can rotate and rescale $g_r$; a higher resulting ratio may reflect a different update field rather than resolution of the original conflict.
+A fair algorithm comparison must therefore report both fields on matched data or evaluate a common probe gradient after training.
+Without that control, $\kappa$ explains the optimizer's update geometry but does not rank its competence.
+
+Finally, visibility itself is not binary.
+Proposition~3 implies that a coarse label may average away conflict that appears under identities or episode-level assignments.
+A practical study should predeclare the finest relation partition it can intervene on, then report coarser aggregations as sensitivity analyses.
+This turns an informal statement such as ``hidden teamwork is hard'' into a sequence of auditable questions: which relation, under which mixture, for which update field, at what energy, and with what return?
+
+\textbf{Next steps.}
+The immediate empirical need is not another environment count but a matched intervention: identical dynamics, reward, seeds, and checkpoints, changing only whether $r$ is observed.
+The theoretical extension is an $m$-relation decomposition with explicit mixture weights and confidence intervals for both $\mathcal{E}$ and $\kappa$.
+Online estimates could then test whether contraction predicts the benefit of memory, teammate inference, or information reveal before those mechanisms are added.
 
 
 \section{Conclusion}
 
-We introduced Information-Induced Gradient Contraction (IIGC), a framework for understanding how hidden relational information erases learning signals in multi-agent RL.
-The framework's centerpiece is $\kappa$, the Relational Gradient Retention Ratio---a single, computable scalar that measures what fraction of gradient energy survives partial observability.
-Together with the path integral, $\kappa$ provides a Stable-or-Stuck diagnostic that classifies training trajectories into four regimes using only rollout access.
-
-Three environments validate the framework:
-510K reveals the deceptive pattern that motivates it (hidden relations $\rightarrow$ shorter paths);
-Toy exposes its diagnostic necessity (hidden relations $\rightarrow$ wandering paths with zero learning);
-Overcooked demonstrates its utility in a realistic setting (hidden partner roles $\rightarrow$ $\kappa=0.000$ across eight seeds).
-Cross-algorithm measurements reveal systematic $\kappa$ signatures distinguishing policy-gradient from value-based methods.
-Rather than pursuing marginal performance gains, $\kappa$ offers a different kind of value: it identifies training runs that are structurally doomed before they consume substantial compute.
-A short trajectory can lie; $\kappa$ tells you when to believe it.
+Behavioral stillness is not evidence of convergence.
+Under hidden relations, useful conditional gradients can be destroyed by aggregation; in sparse-reward settings, the conditional gradients may instead be absent.
+The energy $\mathcal{E}$ and retention ratio $\kappa$ separate these cases, while the path integral $\mathcal{P}$ describes their visible consequence.
+The resulting rule is simple: establish that a signal exists, measure what mixing retains, and only then interpret the learning path.
 
 
-\bibliographystyle{aaai2027}
+\clearpage
 \bibliography{references}
 
-\newpage
+\clearpage
 \section*{Appendix A: 510K Game Rules and Feature Definitions}
 
 \textbf{Game rules.}
 510K is a four-player trick-taking game with a standard 52-card deck.
-Cards 5, 10, K carry point values (5, 10, 10).
-The lead player sets the pattern (single, pair, straight, bomb, 510K pattern); others must follow with a higher-rank play or pass.
+Cards 5, 10, and K carry point values (5, 10, and 10).
+The lead player sets the pattern (single, pair, straight, bomb, or 510K pattern); others must follow with a higher-rank play or pass.
 The trick winner collects all 5/10/K points from the trick.
 
-Four modes share identical card mechanics but differ in team structure and termination:
+Four modes share base card mechanics but differ in team structure and termination:
 \begin{itemize}
-\item \textsc{Single}: solo-competitive. Game ends when first player empties hand. Winner $+30$, losers $-10$ each.
-\item \textsc{Static}: fixed teams (0\&2 vs.\ 1\&3). Game ends when both members of one team finish. Winners $+15$, losers $-15$ each.
-\item \textsc{Dynamic}: teams by hidden red-Ace distribution (holders of A$\heartsuit$/A$\diamondsuit$ form one team). Scoring same as \textsc{Static}. Red A is the strongest single; red-A pair is the strongest bomb.
-\item \textsc{Obvious}: identical to \textsc{Dynamic} in card mechanics, but team membership is observable (4-bit indicator). Ablation isolating information structure.
+\item \textsc{Single}: solo-competitive. The game ends when the first player empties its hand. The winner receives $+30$ and each loser $-10$.
+\item \textsc{Static}: fixed teams (0\&2 versus 1\&3). The game ends when both members of one team finish. Winners receive $+15$ and losers $-15$.
+\item \textsc{Dynamic}: teams follow the hidden red-Ace distribution (holders of A$\heartsuit$/A$\diamondsuit$ form one team). Scoring matches \textsc{Static}; red A also changes the card hierarchy.
+\item \textsc{Obvious}: identical to \textsc{Dynamic} in card mechanics, with team membership added to the observation as a four-bit indicator.
 \end{itemize}
 
 \textbf{Behavioral features.}
-Seven mode-independent features ($\phi_1$--$\phi_7$), all VIF $< 2$:
+Seven mode-independent features ($\phi_1$--$\phi_7$), all with VIF $<2$, define the 510K path:
 \begin{itemize}
 \item $\phi_1$ MyScore: cumulative 510K points, normalized by 150.
-\item $\phi_2$ MyHandSize: fraction of hand played.
-\item $\phi_3$ MyStrength: average card rank, mapped to $[0,1]$.
-\item $\phi_4$ TrickScore: points at stake in current trick, normalized by 100.
-\item $\phi_5$ PassCount: consecutive passes in current trick, normalized.
-\item $\phi_6$ ScoreSpread: std.\ of scores across players, normalized by 50. (Cooperative feature.)
-\item $\phi_7$ SuppressionGap: rank gap to leader's strongest card, normalized by 12. (Cooperative feature.)
+\item $\phi_2$ MyHandSize: fraction of the original hand played.
+\item $\phi_3$ MyStrength: average card rank mapped to $[0,1]$.
+\item $\phi_4$ TrickScore: points at stake in the current trick, normalized by 100.
+\item $\phi_5$ PassCount: consecutive passes in the current trick, normalized.
+\item $\phi_6$ ScoreSpread: standard deviation of player scores, normalized by 50.
+\item $\phi_7$ SuppressionGap: rank gap to the leader's strongest card, normalized by 12.
 \end{itemize}
+Deleting any single feature preserves the mean ordering
+$\textsc{Single}>\textsc{Static}>\textsc{Dynamic}$ in all seven leave-one-feature-out checks.
 
-\textbf{Feature ablation.}
-Deleting any single feature ($\phi_1$--$\phi_7$) preserves the monotonic path-length ordering $\textsc{Single} > \textsc{Static} > \textsc{Dynamic}$ (7/7 subsets), confirming the finding is not an artifact of feature selection.
-
-\textbf{OBVIOUS construction.}
-The \textsc{Obvious} observation vector is 116-dimensional (112 base + 4 teammate-indicator bits).
-The 4 bits encode: bit $i=1$ if player $i$ is on the observing agent's team.
-This is the only structural difference from \textsc{Dynamic} (112-dim observation).
+\textbf{Observation intervention.}
+\textsc{Obvious} has a 116-dimensional observation (112 base features plus four team-indicator bits).
+Bit $i$ is one when player $i$ is on the observing agent's team.
+\textsc{Dynamic} omits these four bits.
 
 \end{document}
