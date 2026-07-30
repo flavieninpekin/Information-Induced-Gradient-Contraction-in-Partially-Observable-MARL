@@ -1,7 +1,6 @@
 \documentclass[letterpaper]{article}
 \usepackage[submission]{aaai2027}
 \usepackage{amsmath,amssymb,booktabs}
-\usepackage{float}
 \usepackage[hyphens]{url}
 \usepackage{enumitem}
 \urlstyle{same}
@@ -19,44 +18,53 @@
 
 510K is a four-player trick-taking game with a standard 52-card deck.
 Cards 5, 10, K carry point values (5, 10, 10).
-The lead player sets the pattern (single, pair, straight, bomb, 510K pattern, etc.); others must follow with a higher-rank play or pass.
-The trick winner collects all 5/10/K points from the trick.
+The lead player sets the pattern; others must follow with a higher-rank play or pass.
+The trick winner collects all 5/10/K points.
 
-\bigskip
+\medskip
 \noindent\textbf{Action space:} 300 discrete actions (0 = pass, 1--299 = pattern index).
-\quad\textbf{Observation space:} 112-dim Box (116-dim for OBVIOUS mode, with 4-bit teammate indicator).
-\quad\textbf{15 pattern types:} SINGLE, PAIR, THREE, THREE\_ONE, THREE\_PAIR, STRAIGHT (5+), CONSECUTIVE\_PAIRS (3+), AIRPLANE\_NONE, AIRPLANE\_SINGLE, AIRPLANE\_PAIR, BOMB, NONSUIT\_510K, SUIT\_510K, RED\_A\_SINGLE, RED\_A\_PAIR.
+\textbf{Observation:} 112-dim Box (116-dim for OBVIOUS mode, with 4 additional teammate-indicator bits).
+\textbf{Pattern types (15):} SINGLE, PAIR, THREE, THREE\_ONE, THREE\_PAIR, STRAIGHT (5+), CONSECUTIVE\_PAIRS (3+), AIRPLANE\_NONE, AIRPLANE\_SINGLE, AIRPLANE\_PAIR, BOMB, NONSUIT\_510K, SUIT\_510K, RED\_A\_SINGLE, RED\_A\_PAIR.
 
-\bigskip
-\noindent Four modes share identical card mechanics but differ in team structure:
+\medskip
+\noindent Four modes share identical card mechanics but differ in team structure and termination:
 
 \begin{itemize}
-\item \textsc{Single}: solo-competitive. Game ends when first player empties hand. Winner $+30$, losers $-10$ each.
-\item \textsc{Static}: fixed teams (players 0\&2 vs.\ 1\&3). Both teammates must finish. Winners $\times 2$ multiplier, losers $\times 1$.
-\item \textsc{Dynamic}: teams determined by hidden red-Ace distribution (holders of A$\heartsuit$/A$\diamondsuit$ form one team). Same scoring as \textsc{Static}. Red A is the strongest single; red-A pair is the strongest bomb.
-\item \textsc{Obvious}: identical card mechanics to \textsc{Dynamic}, but team membership is observable as a 4-bit observation. This isolates \textit{information structure} from card mechanics.
+\item \textsc{Single}: solo-competitive. Game ends when first player empties hand.
+  Winner $+30$, losers $-10$ each (plus own 510K point accumulation).
+\item \textsc{Static}: fixed teams (players 0\&2 vs.\ 1\&3). Both teammates must finish.
+  Winners receive a $\times 2$ score multiplier; losers $\times 1$.
+\item \textsc{Dynamic}: teams determined by hidden red-Ace distribution (holders of
+  A$\heartsuit$/A$\diamondsuit$ form one team). Same scoring as \textsc{Static}.
+  Red A is the strongest single; red-A pair is the strongest bomb.
+  Agent must infer teammates from gameplay---team membership is never observed.
+\item \textsc{Obvious}: identical card mechanics to \textsc{Dynamic}, but team membership
+  is observable as a 4-bit observation. This isolates \textit{information structure}
+  from card mechanics.
 \end{itemize}
 
-\bigskip
+\medskip
 \noindent\textbf{OBVIOUS construction.}
 The \textsc{Obvious} observation is 116-dimensional (112 base + 4 teammate-indicator bits).
-Bit $i=1$ if player $i$ is on the agent's team. This is the only structural difference from \textsc{Dynamic} (112-dim).
-During continuous reveal experiments, these bits are randomly masked per-timestep with probability $1-p$ where $p$ is the reveal fraction.
-Per-timestep masking was chosen over per-episode masking to model a noisy sensor that occasionally fails---a realistic information-access pattern in deployed systems.
+Bit $i=1$ if player $i$ is on the agent's team. This is the only structural
+difference from \textsc{Dynamic} (112-dim).
+During continuous reveal experiments, these bits are randomly masked per-timestep
+with probability $1-p$ where $p$ is the reveal fraction.
+Per-timestep masking was chosen over per-episode masking to model a noisy sensor
+that occasionally fails---a realistic information-access pattern in deployed systems.
 
-\bigskip
+\medskip
 \noindent\textbf{Behavioral features for path integral.}
-Seven mode-independent features ($\phi_1$--$\phi_7$), all with VIF $< 2$:
-\begin{itemize}
-\item $\phi_1$ \textbf{MyScore}: cumulative 510K points, normalized by 150.
-\item $\phi_2$ \textbf{MyHandSize}: fraction of hand played, $(13 - |h|)/13$.
-\item $\phi_3$ \textbf{MyStrength}: average card rank, mapped to $[0,1]$.
-\item $\phi_4$ \textbf{TrickScore}: points at stake in current trick, normalized by 100.
-\item $\phi_5$ \textbf{PassCount}: consecutive passes in current trick, normalized.
-\item $\phi_6$ \textbf{ScoreSpread}: std.\ of scores across players, normalized by 50.
-\item $\phi_7$ \textbf{SuppressionGap}: rank gap to leader's strongest card, normalized by 12.
-\end{itemize}
-Feature ablation: deleting any single feature preserves the path-length ordering $\textsc{Single} > \textsc{Static} > \textsc{Dynamic}$ (7/7 subsets), confirming robustness to feature selection.
+Seven mode-independent features ($\phi_1$--$\phi_7$), all with VIF $< 2$:\\
+$\phi_1$ \textbf{MyScore}: cumulative 510K points, normalized by 150.\\
+$\phi_2$ \textbf{MyHandSize}: fraction of hand played, $(13 - |h|)/13$.\\
+$\phi_3$ \textbf{MyStrength}: average card rank, mapped to $[0,1]$.\\
+$\phi_4$ \textbf{TrickScore}: points at stake in current trick, normalized by 100.\\
+$\phi_5$ \textbf{PassCount}: consecutive passes in current trick, normalized.\\
+$\phi_6$ \textbf{ScoreSpread}: std.\ of scores across players, normalized by 50. (Cooperative.)\\
+$\phi_7$ \textbf{SuppressionGap}: rank gap to leader's strongest card, normalized by 12. (Cooperative.)\\
+Feature ablation: deleting any single feature preserves the path-length ordering
+$\textsc{Single} > \textsc{Static} > \textsc{Dynamic}$ (7/7 subsets).
 
 \subsection{Toy Matching Environment}
 
@@ -70,7 +78,10 @@ A minimal 2-action contextual bandit that isolates IIGC:
 \item \textbf{Training}: 10K steps, 10 independent seeds per condition.
 \end{itemize}
 
-In HIDDEN mode, the agent receives no information about $p$. Gradients from episodes where $p=0$ and $p=1$ cancel completely ($\kappa \to 0$). In REVEALED mode, the agent observes $p$ directly and learns the optimal type-matching policy.
+In HIDDEN mode, the agent receives no information about $p$.
+Gradients from episodes where $p=0$ and $p=1$ cancel nearly completely ($\kappa \approx 0$).
+In REVEALED mode, the agent observes $p$ directly and learns the optimal
+type-matching policy.
 
 \subsection{Overcooked Environment}
 
@@ -82,56 +93,65 @@ Grid-world cooperative cooking game with configurable partner roles:
 \item \textbf{Layout}: \texttt{cramped\_room} (standard Overcooked layout).
 \item \textbf{Reward}: sparse $+20$ per soup delivered, $-0.01$ per timestep.
 \item \textbf{Horizon}: 400 steps per episode.
-\item \textbf{Training}: PPO, 1M steps, 8 parallel envs, 8 seeds per mode.
+\item \textbf{Training}: PPO, 1M steps, 8 parallel envs, 8 independent seeds per mode.
 \end{itemize}
 
-\bigskip
+\medskip
 \noindent\textbf{Partner agent design.}
-Three specialized partner agents are implemented to create genuine strategic divergence:
+Three specialized partner agents create genuine strategic divergence.
+The key design principle is \textbf{role complementarity}: chef and waiter perform mutually exclusive subtasks. A policy optimized for one role (e.g., delivering when paired with a chef) fails entirely under the other role (delivering when paired with a waiter, where nobody cooks). This ensures that hidden-role training faces genuine gradient conflict.
 
-\begin{itemize}[leftmargin=*]
+\begin{itemize}
 \item \textbf{Chef} (cook): Picks up onions from supply depots and places them in empty or partially-filled pots. Never picks up plates or delivers finished soups. Implements a greedy heuristic: if not holding an object, navigate to nearest onion supply; if holding an onion, navigate to nearest available pot. Uses motion-planning via the Overcooked \texttt{MotionPlanner} for pathfinding.
-\item \textbf{Waiter} (deliver): Picks up plates from dispensers, retrieves finished soups from cooking pots, and delivers them to the serving counter. Never picks up raw ingredients or interacts with pots. Heuristic: if not holding an object, navigate to plate dispenser; if holding a plate, navigate to nearest ready soup; if holding a soup, navigate to serving counter.
+\item \textbf{Waiter} (deliver): Picks up plates from dispensers, retrieves finished soups from cooking pots, and delivers them to the serving counter. Never picks up raw ingredients or interacts with pots. Heuristic: if not holding, navigate to plate dispenser; if holding plate, navigate to nearest ready soup; if holding soup, navigate to serving counter.
 \item \textbf{Chaos} (obstructive, V2 experiments only): With 30\% probability executes INTERACT at the current location; 40\% probability takes a random movement action; 30\% probability stays in place. Used to test whether agents learn independent strategies under a disruptive partner before converging on the chef/waiter design.
 \end{itemize}
 
-The key design principle is \textbf{role complementarity}: chef and waiter perform mutually exclusive subtasks. A policy optimized for one role (e.g., delivering when paired with a chef) fails entirely under the other role (delivering when paired with a waiter, where nobody cooks). This ensures that hidden-role training faces genuine gradient conflict.
-
-\subsection{Overcooked Variant History}
-
-Three variants were developed iteratively:
-
-\begin{itemize}
-\item \textbf{V1} (greedy/random partner): Used built-in \texttt{GreedyHumanModel} and \texttt{RandomAgent}. Failed to produce κ differentiation because both partners require similar optimal strategies from the agent---the policy could ignore partner type and still succeed.
-\item \textbf{V2} (chef/waiter/chaos): Introduced role specialization but included chaos as a ``solo'' training condition. Failed because chaos was too disruptive (reward=0 prevented any learning), making SINGLE mode κ measurements degenerate. Led to the insight that κ can only be measured when training produces non-zero gradients.
-\item \textbf{V3} (chef/waiter, static/dynamic): The final design. Removed chaos partner. STATIC mode reveals partner type in observation; DYNAMIC mode hides it and switches roles mid-episode every 30 steps.
-\end{itemize}
+\medskip
+\noindent\textbf{Overcooked variant history.}
+Three variants were developed iteratively.
+\textbf{V1} (greedy/random partner): used built-in \texttt{GreedyHumanModel} and \texttt{RandomAgent}. Failed to produce $\kappa$ differentiation because both partners require similar optimal strategies from the agent---the policy could ignore partner type and still succeed.
+\textbf{V2} (chef/waiter/chaos): introduced role specialization but included chaos as a ``solo'' training condition. Failed because chaos was too disruptive (reward=0 prevented any learning), making SINGLE mode $\kappa$ measurements degenerate. Led to the insight that $\kappa$ can only be measured when training produces non-zero gradients.
+\textbf{V3} (chef/waiter, static/dynamic): the final design. Removed chaos partner. STATIC mode reveals partner type in observation; DYNAMIC mode hides it and switches roles mid-episode every 30 steps.
 
 \section{$\kappa$ Computation}
 
 \subsection{Pseudocode}
 
-\begin{enumerate}[wide, labelwidth=!, labelindent=0pt]
-\item \textbf{Input:} trained policy $\pi_\theta$, two identifiable configurations $A$ and $B$, rollout count $N$, discount $\gamma$.
+\begin{enumerate}
+\item \textbf{Input:} trained policy $\pi_\theta$, two identifiable
+  configurations $A$ and $B$, rollout count $N$, and discount $\gamma$.
 \item Initialize $g_A\gets\mathbf{0}$ and $g_B\gets\mathbf{0}$.
-\item For $i=1,\ldots,N$, collect $\tau_A\gets\mathrm{Rollout}(\pi_\theta,A)$ and $\tau_B\gets\mathrm{Rollout}(\pi_\theta,B)$, then add the corresponding return-weighted score-function gradients to $g_A/N$ and $g_B/N$.
-\item Compute $g_{\mathrm{mixed}}\gets(g_A+g_B)/2$ and $\mathcal{E}\gets(\|g_A\|^2+\|g_B\|^2)/2$.
-\item If $\mathcal{E}=0$, return zero energy and $\kappa=\mathrm{N/A}$; otherwise return $\kappa=\|g_{\mathrm{mixed}}\|^2/\mathcal{E}$.
+\item For $i=1,\ldots,N$, collect
+  $\tau_A\gets\mathrm{Rollout}(\pi_\theta,A)$ and
+  $\tau_B\gets\mathrm{Rollout}(\pi_\theta,B)$, then add the corresponding
+  return-weighted score-function gradients to $g_A/N$ and $g_B/N$.
+\item Compute
+  $g_{\mathrm{mixed}}\gets(g_A+g_B)/2$ and
+  $\mathcal{E}\gets(\|g_A\|^2+\|g_B\|^2)/2$.
+\item If $\mathcal{E}=0$, return zero energy and $\kappa=\mathrm{N/A}$;
+  otherwise return $\kappa=\|g_{\mathrm{mixed}}\|^2/\mathcal{E}$.
 \end{enumerate}
 
 \subsection{Numerical Stability and Edge Cases}
 
 $\kappa$ is computed by:
-\[
+\begin{equation}
 \kappa = \frac{\lVert (g_A + g_B)/2 \rVert^2}{\max\bigl((\lVert g_A \rVert^2 + \lVert g_B \rVert^2)/2,\;\varepsilon\bigr)}
-\]
+\end{equation}
 where $\varepsilon = 10^{-10}$ prevents division by zero.
 
-\textbf{Zero-gradient case.} When both $g_A$ and $g_B$ are zero (no reward signal in either configuration), $\kappa$ is reported as 0.000 (the numerator is zero; the ratio is numerically zero). This occurs in Overcooked DYNAMIC mode, where the agent fails to deliver a single soup---the REINFORCE gradient is zero for all steps, producing $\mathcal{E}=0$ and $\kappa\to 0$ by construction. We distinguish this from $\kappa=0$ due to gradient cancellation ($g_A \approx -g_B$) by reporting ``zero energy'' separately in the data table.
+\medskip
+\noindent\textbf{Zero-gradient case.}
+When both $g_A$ and $g_B$ are zero (no reward signal in either configuration), $\kappa$ is reported as 0.000 (the numerator is zero; the ratio is numerically zero). This occurs in Overcooked DYNAMIC mode, where the agent fails to deliver a single soup---the REINFORCE gradient is zero for all steps, producing $\mathcal{E}=0$ and $\kappa\to 0$ by construction. We distinguish this from $\kappa=0$ due to gradient cancellation ($g_A \approx -g_B$) by reporting ``zero energy'' separately in the data table.
 
-\textbf{One-sided energy.} When exactly one conditional gradient is zero ($\|g_A\|>0$, $\|g_B\|\approx 0$), algebraically $\kappa = 0.5$. This occurs when the agent learns a strategy effective for one partner but not the other (e.g., Overcooked STATIC seeds where the agent learns to deliver with chef but not to cook with waiter). This produces the same numerical value as orthogonal gradients, creating an identification ambiguity that should be resolved by inspecting per-configuration rewards.
+\medskip
+\noindent\textbf{One-sided energy.}
+When exactly one conditional gradient is non-zero ($\|g_A\|>0$, $\|g_B\|\approx 0$), algebraically $\kappa = 0.5$. This occurs when the agent learns a strategy effective for one partner but not the other (e.g., Overcooked STATIC seeds where the agent learns to deliver with chef but not to cook with waiter). This produces the same numerical value as genuinely orthogonal gradients, creating an identification ambiguity that should be resolved by inspecting per-configuration rewards (see Section 6).
 
-\textbf{Sensitivity to $N$.} We use $N = 30$ evaluation rollouts per configuration.
+\medskip
+\noindent\textbf{Sensitivity to $N$.}
+We use $N = 30$ evaluation rollouts per configuration.
 At $N=30$, the standard error of $\kappa$ across repeated measurements on the same model is $<0.02$ for converged policies.
 Increasing $N$ to 100 changes individual $\kappa$ estimates by $<0.03$ on average.
 
@@ -139,61 +159,73 @@ Increasing $N$ to 100 changes individual $\kappa$ estimates by $<0.03$ on averag
 
 \noindent\textbf{Policy-gradient (PPO, A2C, REINFORCE).}
 The REINFORCE-style per-configuration gradient is:
-\[
-g_r = \mathbb{E}_{\tau \sim \pi, r}\left[ \nabla_\theta \log \pi_\theta(a_t|o_t) \cdot R(\tau) \right]
-\]
+\begin{equation}
+g_r = \mathbb{E}_{\tau \sim \pi, r}\!\left[ \nabla_\theta \log \pi_\theta(a_t|o_t) \cdot R(\tau) \right]
+\end{equation}
 where $R(\tau) = \sum_t \gamma^t r_t$ is the discounted return for trajectory $\tau$ under configuration $r$.
 Gradients are accumulated across all $(o_t, a_t)$ pairs within the trajectory, weighted by the episode return.
 This directly measures how the policy's action distribution \textit{would change} if trained exclusively on data from configuration $r$.
 
+\medskip
 \noindent\textbf{Value-based (DQN).}
 For DQN, we substitute the TD-loss gradient of the Q-network:
-\[
-g_r = \mathbb{E}_{(o,a,r,o')\sim \mathcal{D}_r}\left[ \nabla_\theta \tfrac{1}{2}\bigl(Q_\theta(o,a) - (r + \gamma \max_{a'} Q_{\theta^-}(o',a'))\bigr)^2 \right]
-\]
+\begin{equation}
+g_r = \mathbb{E}_{(o,a,r,o')\sim \mathcal{D}_r}\!\left[ \nabla_\theta \tfrac{1}{2}\bigl(Q_\theta(o,a) - (r + \gamma \max_{a'} Q_{\theta^-}(o',a'))\bigr)^2 \right]
+\end{equation}
 where $\mathcal{D}_r$ is a batch of transitions collected under configuration $r$ and $Q_{\theta^-}$ is the target network.
 This gradient measures how the Q-function's prediction accuracy would \textit{change} for transitions from configuration $r$, rather than measuring policy divergence.
 
+\medskip
 \noindent\textbf{Actor-critic (SAC).}
 For SAC, we compute gradients through the \textit{actor network} only, using the soft policy-gradient loss:
-\[
-g_r = \nabla_\theta \mathbb{E}_{o\sim\mathcal{D}_r}\left[ \sum_a \pi_\theta(a|o)\bigl(\alpha \log \pi_\theta(a|o) - \min_{i=1,2} Q_{\phi_i}(o,a)\bigr) \right]
-\]
+\begin{equation}
+g_r = \nabla_\theta \mathbb{E}_{o\sim\mathcal{D}_r}\!\left[ \sum_a \pi_\theta(a|o)\bigl(\alpha \log \pi_\theta(a|o) - \min_{i=1,2} Q_{\phi_i}(o,a)\bigr) \right]
+\end{equation}
 This hybrid approach uses Q-values from the critic but the gradient is taken with respect to the actor's parameters, making it structurally closer to the policy-gradient family than to pure value-based methods.
 
-\noindent\textbf{Why cross-algorithm κ is not comparable in absolute value.}
-Because each algorithm family uses a different gradient field, $\kappa(PPO)$, $\kappa(DQN)$, and $\kappa(SAC)$ measure alignment in \textit{different vector spaces} (policy-gradient space, Q-function space, and soft-actor space, respectively).
-Proposition 4 (below) formalizes this: there is no estimator-independent ordering.
+\medskip
+\noindent\textbf{Why cross-algorithm $\kappa$ is not comparable in absolute value.}
+Because each algorithm family uses a different gradient field, $\kappa(\text{PPO})$, $\kappa(\text{DQN})$, and $\kappa(\text{SAC})$ measure alignment in \textit{different vector spaces} (policy-gradient space, Q-function space, and soft-actor space, respectively).
+Proposition~4 below formalizes this: there is no estimator-independent ordering.
 Consequently, cross-algorithm comparison is restricted to the \textit{directional} signal (whether $\kappa_R > \kappa_H$ or $\kappa_R < \kappa_H$), not the absolute $\kappa$ magnitude.
 
 \subsection{Per-Step vs.\ Per-Episode Reward Weighting}
 
 For dense-reward environments (Toy: reward per step), each $(o_t, a_t)$ pair is weighted by the individual step reward $r_t$.
 For sparse-reward environments (Overcooked: reward only at soup delivery), all $(o_t, a_t)$ pairs within the episode are weighted by the \textit{episode return} $R(\tau) = \sum_t \gamma^t r_t$, ensuring that early actions contributing to eventual soup delivery receive non-zero gradient weight.
-For 510K, rewards are terminal (end-of-game scores), so the episode return is used.
-This design is standard in REINFORCE implementations and ensures κ is computed consistently across diverse reward structures.
+For 510K, rewards are terminal (end-of-game scores), so the episode return is used throughout.
+This design is standard in REINFORCE implementations and ensures $\kappa$ is computed consistently across diverse reward structures.
 
 \section{Proofs of Propositions}
 
 \subsection{Proposition 1 (Pythagorean Decomposition)}
 
 Let $g_A, g_B \in \mathbb{R}^d$ be the policy gradients under configurations $A$ and $B$.
-Define $g_+ = \frac{g_A + g_B}{2}$ (shared component) and $g_- = \frac{g_A - g_B}{2}$ (differential component).
+Define $g_+ = \frac{g_A + g_B}{2}$ (shared component) and $g_- = \frac{g_A - g_B}{2}$
+(differential component).
 
 \begin{align}
 \|g_A\|^2 + \|g_B\|^2
-&= \|g_+ + g_-\|^2 + \|g_+ - g_-\|^2 \\
-&= \bigl(\|g_+\|^2 + \|g_-\|^2 + 2 g_+ \!\cdot\! g_-\bigr) \\
-&\qquad + \bigl(\|g_+\|^2 + \|g_-\|^2 - 2 g_+ \!\cdot\! g_-\bigr) \\
+&= \|g_+ + g_-\|^2 + \|g_+ - g_-\|^2 \nonumber\\
+&= \bigl(\|g_+\|^2 + \|g_-\|^2 + 2 g_+ \!\cdot\! g_-\bigr) \nonumber\\
+&\qquad + \bigl(\|g_+\|^2 + \|g_-\|^2 - 2 g_+ \!\cdot\! g_-\bigr) \nonumber\\
 &= 2\bigl(\|g_+\|^2 + \|g_-\|^2\bigr)
 \end{align}
 
 Therefore $\frac{\|g_A\|^2 + \|g_B\|^2}{2} = \|g_+\|^2 + \|g_-\|^2$.
-Since $\kappa = \|g_+\|^2 / (\|g_+\|^2 + \|g_-\|^2)$, it follows that $\kappa$ is the fraction of total gradient energy retained after aggregation.
+Since $\kappa = \|g_+\|^2 / (\|g_+\|^2 + \|g_-\|^2)$, it follows that $\kappa$ is the
+fraction of total gradient energy retained after aggregation.
+The complementary fraction $1-\kappa = \|g_-\|^2/(\|g_+\|^2 + \|g_-\|^2)$ is the
+share of gradient energy \textit{canceled} by hidden information: it is the energy
+invested in learning incompatible strategies that mutually annihilate during
+gradient descent.
+
+From this geometric picture we can read off the extreme cases. When $g_A \approx g_B$, then $g_- \approx \mathbf{0}$, $\kappa \approx 1$, and all gradient energy is retained. When $g_A \approx -g_B$, then $g_+ \approx \mathbf{0}$, $\kappa \approx 0$, and the learning signal collapses to zero despite each individual configuration carrying strong gradient energy. The intermediate case $g_A \perp g_B$ yields $g_+ \perp g_-$ with $\|g_+\| = \|g_-\|$, giving $\kappa = 0.5$.
 
 \subsection{Proposition 2 (Effective Learning Signal)}
 
-Under balanced configuration mixing ($p_A = p_B = 1/2$), the expected per-step gradient during training is:
+Under balanced configuration mixing ($p_A = p_B = 1/2$), the expected per-step
+gradient during training is:
 \begin{equation}
 \mathbb{E}[g_{\text{train}}] = \frac{1}{2}(g_A + g_B) = g_+
 \end{equation}
@@ -201,24 +233,48 @@ The effective gradient magnitude satisfies:
 \begin{equation}
 \|g_+\|^2 = \kappa \cdot \frac{\|g_A\|^2 + \|g_B\|^2}{2}
 \end{equation}
-When $\kappa \to 0$, $\|g_+\|^2 \to 0$ and the policy receives no effective learning signal regardless of the per-configuration gradient magnitudes.
+When $\kappa \to 0$, $\|g_+\|^2 \to 0$ and the policy receives no effective
+learning signal regardless of the per-configuration gradient magnitudes.
+During gradient descent, this means update steps shrink toward zero in expectation, producing a stalled optimization trajectory that can be mistaken for convergence.
 
 \subsection{Proposition 3 (Partition Refinement)}
 
-Let a fine relation partition $\mathcal{R}$ refine a coarse partition $\mathcal{C}$, with $g_c=\mathbb{E}[g_r\mid c]$.
-Both partitions have the same mixed gradient. For every coarse cell $c$, Jensen's inequality gives
+Let a fine relation partition $\mathcal{R}$ refine a coarse partition
+$\mathcal{C}$, with $g_c=\mathbb{E}[g_r\mid c]$.
+Both partitions have the same mixed gradient. For every coarse cell $c$,
+Jensen's inequality gives
 \begin{equation}
-\sum_{r\in c} p(r\mid c)\|g_r\|^2 \geq \left\|\sum_{r\in c}p(r\mid c)g_r\right\|^2 = \|g_c\|^2.
+\sum_{r\in c} p(r\mid c)\|g_r\|^2
+\geq
+\left\|\sum_{r\in c}p(r\mid c)g_r\right\|^2
+=\|g_c\|^2.
 \end{equation}
-Multiplying by $p_c$ and summing over $c$ shows that fine-partition energy is at least coarse-partition energy. Since the retained numerator is unchanged, $\kappa_{\mathcal{R}}\leq\kappa_{\mathcal{C}}$ whenever both ratios are defined.
+Multiplying by $p_c$ and summing over $c$ shows that fine-partition energy is
+at least coarse-partition energy. Since the retained numerator $\|g_+\|^2$ is unchanged by partition refinement (only the fine/coarse decomposition of the denominator differs),
+$\kappa_{\mathcal{R}} \leq \kappa_{\mathcal{C}}$ whenever both ratios are
+defined.
 
-\textit{Interpretation:} Finer information partitioning always reduces or maintains κ. Adding more hidden configurations never increases gradient retention---it can only reveal more conflict. This proposition provides the formal guarantee behind the continuous reveal curve's shape.
+\noindent\textit{Interpretation.}
+Finer information partitioning always reduces or maintains $\kappa$.
+Adding more hidden configurations never increases gradient retention---it can only reveal more conflict.
+When a designer splits a single hidden variable into finer sub-categories (e.g., partitioning ``teammate'' into ``teammate-type-A'' and ``teammate-type-B''), $\kappa$ is guaranteed not to increase.
+This proposition provides the formal guarantee behind the continuous reveal curve's shape: as we progressively add consistent information (thereby coarsening the hidden partition), $\kappa$ must monotonically increase toward 1.
 
 \subsection{Proposition 4 (Gradient-Field Specificity)}
 
-For policy-gradient methods, $g_r^{\text{PG}}$ reflects the direction of improvement in action preferences for configuration $r$. A TD-loss gradient instead reflects prediction residuals under its data distribution and target.
+For policy-gradient methods, $g_r^{\text{PG}}$ reflects the direction of
+improvement in action preferences for configuration $r$. A TD-loss gradient
+instead reflects prediction residuals under its data distribution and target.
 
-Consequently there is no estimator-independent ordering between $\kappa(g_A^{\text{PG}},g_B^{\text{PG}})$ and $\kappa(g_A^{\text{TD}},g_B^{\text{TD}})$. Changing the update field can change both the angle and the norm ratio of the conditional vectors even for the same environment and policy. Cross-algorithm values must therefore name the estimator; an empirical reversal is not a proof that either family is immune to hidden information.
+Consequently there is no estimator-independent ordering between
+$\kappa(g_A^{\text{PG}},g_B^{\text{PG}})$ and
+$\kappa(g_A^{\text{TD}},g_B^{\text{TD}})$. Changing the update field can change
+both the angle and the norm ratio of the conditional vectors even for the same
+environment and policy.
+
+\noindent\textit{Implication for cross-algorithm comparison.}
+Cross-algorithm $\kappa$ values must name the estimator; the directional reversal observed in our DQN and SAC experiments is not a proof that either algorithm family is immune to hidden information. Rather, it reveals that the TD-loss and soft-actor gradient fields respond to information structure differently than the REINFORCE gradient field.
+Because these families use fundamentally different objectives, their $\kappa$ values inhabit different metric spaces and cannot be directly compared in magnitude. The appropriate cross-algorithm analysis is directional: testing whether the same sign pattern ($\kappa_R > \kappa_H$ or $\kappa_R < \kappa_H$) holds within each family.
 
 \section{Experimental Design}
 
@@ -238,14 +294,14 @@ Two REINFORCE configurations were tested on 510K:
 \item \textbf{Self-play (final):} All four players share the same policy weights, updated from the P0 perspective. 8 seeds, 20,000 episodes. Same conclusion: vanilla REINFORCE cannot stably converge on 510K regardless of the opponent model, confirming that GAE and clipping (afforded by A2C/PPO) are necessary for this task.
 \end{itemize}
 
-The self-play results are reported in the main text and appendix tables. Single-agent results are omitted due to non-convergence but available in the code repository.
+The self-play results are reported in the main text and appendix tables. Single-agent results are omitted due to non-convergence but available in the supplementary code.
 
 \subsection{Training Duration Justification}
 
 \begin{itemize}
-\item \textbf{Toy}: 10,000 steps. The toy environment has 20-step episodes, and convergence occurs within $\sim$2,000 steps for REVEALED mode. Extended training to 50,000 steps does not change κ beyond statistical noise.
-\item \textbf{510K}: 1,000,000 steps (PPO/A2C/DQN) or 20,000 episodes (REINFORCE). PPO policy-loss curves plateau by $\sim$600K steps across all modes. DQN training curves are noisier but batch statistics stabilize.
-\item \textbf{Overcooked}: 1,000,000 steps. PPO STATIC reward plateaus by $\sim$500K steps. DYNAMIC reward remains at zero throughout (κ = 0 correspondingly). A2C and DQN fail to produce non-zero reward on this environment at any step count.
+\item \textbf{Toy}: 10,000 steps. The toy environment has 20-step episodes, and convergence occurs within $\sim$2,000 steps for REVEALED mode. Extended training to 50,000 steps does not change $\kappa$ beyond statistical noise.
+\item \textbf{510K}: 1,000,000 steps (PPO/A2C/DQN) or 20,000 episodes (REINFORCE). PPO policy-loss curves plateau by $\sim$600K steps across all modes. DQN training curves are noisier but batch statistics stabilize within the training budget.
+\item \textbf{Overcooked}: 1,000,000 steps. PPO STATIC reward plateaus by $\sim$500K steps. DYNAMIC reward remains at zero throughout ($\kappa = 0$ correspondingly). A2C and DQN fail to produce non-zero reward on this environment at any step count tested.
 \end{itemize}
 
 \subsection{Statistical Methods}
@@ -253,13 +309,13 @@ The self-play results are reported in the main text and appendix tables. Single-
 \begin{itemize}
 \item \textbf{Effect sizes:} Cohen's $d = (\bar{\kappa}_R - \bar{\kappa}_H) / \sigma_{\text{pooled}}$ is reported for representative comparisons.
 \item \textbf{Monotonicity:} Spearman rank correlation between mode ordinality ($\textsc{Single}=1$, $\textsc{Static}=2$, $\textsc{Dynamic}=3$) and path integral $\mathcal{P}$.
-\item \textbf{Continuous reveal:} One-tailed $t$-test (Welch, unequal variance) comparing $\kappa_{0\%}$ against each partial-information level.
+\item \textbf{Continuous reveal:} One-tailed Welch $t$-test (unequal variance) comparing $\kappa_{p}$ against the $\kappa_{0\%}$ baseline at each partial-information level.
 \item \textbf{Significance threshold:} $p < 0.05$ throughout.
 \end{itemize}
 
 \section{Full Path Integral Data}
 
-\begin{table}[H]
+\begin{table}
 \centering
 \small
 \begin{tabular}{lcccc}
@@ -296,7 +352,7 @@ OBVIOUS (78)  & 0.404 & 0.035 & 11.5$\times$ \\
 \clearpage
 \section{Extended $\kappa$ Data}
 
-\begin{table}[H]
+\begin{table}
 \centering
 \scriptsize
 \setlength{\tabcolsep}{2pt}
@@ -329,21 +385,21 @@ Overcooked & DQN & STATIC  & $0.473 \pm 0.093$ & 8 \\
 Overcooked & DQN & DYNAMIC & $0.645 \pm 0.209$ & 8 \\
 \bottomrule
 \end{tabular}
-\caption{Complete κ data across environments, algorithms, and modes.
+\caption{Complete $\kappa$ data across environments, algorithms, and modes.
 Toy DQN ($\kappa_R > \kappa_H$) matches the policy-gradient pattern, indicating the DQN reversal on 510K is driven by replay buffer scale, not an intrinsic property of value-based gradients.
-Overcooked PPO DYNAMIC has zero conditional-gradient energy (all 8 seeds produce zero reward) so κ is numerically zero.}
+Overcooked PPO DYNAMIC has zero conditional-gradient energy (all 8 seeds produce zero reward) so $\kappa$ is numerically zero.}
 \end{table}
 
-\bigskip
+\medskip
 \noindent\textbf{Toy DQN and the reversal pattern.}
 The Toy DQN result ($\kappa_{\text{REVEALED}} = 0.510 > \kappa_{\text{HIDDEN}} = 0.020$) matches the policy-gradient direction, in contrast to 510K DQN ($\kappa_{\text{SINGLE}} = 0.797 < \kappa_{\text{DYNAMIC}} = 0.917$).
-We attribute this to replay buffer capacity: Toy DQN uses a buffer of 2,000 transitions over 10,000 training steps, averaging only 200 steps of history; 510K DQN uses 50,000 transitions over 1,000,000 steps, averaging 5,000 steps.
+We attribute this to replay buffer capacity: Toy DQN uses a buffer of 2,000 transitions over 10,000 training steps, averaging only $\sim$200 steps of history; 510K DQN uses 50,000 transitions over 1,000,000 steps, averaging $\sim$5,000 steps.
 The larger buffer provides more effective mixing of configurations $A$ and $B$, forcing Q-function gradients into alignment.
-This supports the interpretation that the DQN reversal is an \textit{artifact of scale}, not an algorithmic invariant.
+This supports the interpretation that the DQN reversal is an artifact of buffer scale, not an algorithmic invariant.
 
 \section{Split-Batch Reveal Audit}
 
-\begin{table}[H]
+\begin{table}
 \centering
 \small
 \begin{tabular}{lcc}
@@ -357,13 +413,12 @@ Reveal Fraction & Split-batch $\kappa$ (mean $\pm$ std) & $n$ \\
 100\% & $0.616 \pm 0.039$ & 2 \\
 \bottomrule
 \end{tabular}
-\caption{Continuous reveal κ values (510K, PPO, 2 seeds $\times$ 2 rollouts per condition).
-The W-shape is robust at $n=2$ seeds per level.}
+\caption{Continuous reveal $\kappa$ values (510K, PPO, 2 seeds $\times$ 2 rollouts per condition). The W-shape is robust at $n=2$ seeds per level.}
 \end{table}
 
 \section{Training Hyperparameters}
 
-\begin{table}[H]
+\begin{table}
 \centering
 \footnotesize
 \begin{tabular}{@{}lp{0.58\columnwidth}@{}}
@@ -378,12 +433,11 @@ $\gamma$ (discount)& 0.99 \\
 GAE $\lambda$     & 0.95 \\
 Clip range        & 0.2 \\
 Entropy coeff.    & 0.01 \\
-Network arch.     & MLP [256, 256], tanh activation (all envs/all algos except Toy: [32, 32]) \\
+Network arch.     & MLP [256, 256], tanh activation (all envs except Toy: [32, 32]) \\
 Parallel envs     & 8 (PPO/A2C) / 4 (DQN) / 1 (SAC, REINFORCE) \\
-DQN buffer size   & 50,000 (510K) / 2,000 (Toy) / 50,000 (Overcooked) \\
-DQN $\tau$ (target)& 0.005 \\
-DQN exploration   & $\epsilon$-greedy: $1.0 \to 0.02$ over 30\% of training \\
-SAC $\alpha$      & Auto-tuned (initial 0.2, target entropy $0.98 \cdot \log |\mathcal{A}|$) \\
+DQN buffer size   & 50,000 (510K, Overcooked) / 2,000 (Toy) \\
+DQN $\tau$/explore& $\tau=0.005$; $\epsilon$-greedy $1.0 \to 0.02$ over 30\% of training \\
+SAC $\alpha$      & Auto-tuned: initial 0.2, target entropy $0.98 \cdot \log |\mathcal{A}|$ \\
 REINFORCE lr      & $1 \times 10^{-3}$, batch 10 episodes, 20,000 episodes (self-play) \\
 \bottomrule
 \end{tabular}
@@ -392,25 +446,14 @@ REINFORCE lr      & $1 \times 10^{-3}$, batch 10 episodes, 20,000 episodes (self
 
 \section{Computing Infrastructure}
 
-\noindent\textbf{Hardware:} NVIDIA GeForce RTX 5070 Ti Laptop GPU (12 GB VRAM), 32 GB RAM.
+\noindent\textbf{Hardware:} NVIDIA GeForce RTX 5070 Ti Laptop GPU (12 GB VRAM), Intel(R) UHD Graphics (auxiliary), and 32 GB RAM.
 \textbf{Software:} Windows 11; PyTorch 2.11; stable-baselines3 2.8; sb3-contrib 2.8; Gymnasium 0.29+; NumPy 2.3 (with compatibility patches for Overcooked AI legacy gym dependency).
-\textbf{Training time:} ~20 minutes per 1M-step PPO seed (parallel); ~2.5 hours per SAC seed (sequential); ~3.5 minutes per 10K-step Toy seed.
+\textbf{Training time:} $\sim$20 minutes per 1M-step PPO seed (parallel); $\sim$2.5 hours per SAC seed (sequential); $\sim$3.5 minutes per 10K-step Toy seed.
 
 \section{Code and Data Availability}
 
 All source code, experiment configurations, and pre-computed validation results are included in the supplementary material submitted with this paper.
-The codebase includes:
-
-\begin{itemize}
-\item The 510K game environment with four configurable cooperation modes.
-\item The Overcooked role-based partner wrapper (chef, waiter agents).
-\item The Toy Matching environment for gradient contraction isolation.
-\item Training scripts for all five algorithms (PPO, A2C, DQN, SAC, REINFORCE) across all three environments.
-\item $\kappa$ computation utilities and the continuous reveal pipeline.
-\item The path integral analysis framework with seven behavioral features.
-\item Reproducible experiment entry point: \texttt{experiments/reproduce\_all.py}.
-\end{itemize}
-
+The codebase includes the 510K game environment with four configurable cooperation modes; the Overcooked role-based partner wrapper (chef, waiter agents); the Toy Matching environment for gradient contraction isolation; training scripts for all five algorithms (PPO, A2C, DQN, SAC, REINFORCE) across all three environments; $\kappa$ computation utilities and the continuous reveal pipeline; and the path integral analysis framework with seven behavioral features.
 All materials are provided under the MIT License and will be made publicly available upon publication.
 
 \end{document}
