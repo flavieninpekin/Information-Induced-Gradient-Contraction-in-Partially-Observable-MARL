@@ -332,7 +332,9 @@ The replay buffer acts as an implicit averager: it pre-averages conflicting sign
 
 The two mechanisms interact multiplicatively:
 
-\begin{center}
+\begin{table}[h]
+\centering
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcc}
 \toprule
 & Gradient Source & Experience Aggregation \\
@@ -340,8 +342,9 @@ The two mechanisms interact multiplicatively:
 PG family  & Action-preference (amplifies conflict) & Sequential (exposes conflict) \\
 Value family & Value-prediction (suppresses conflict) & Replay-buffered (averages conflict) \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{tabular}}
+\caption{Two mechanisms jointly determine $\kappa$ direction.}
+\end{table}
 
 For policy-gradient methods, both mechanisms push in the same direction: the gradient source amplifies policy divergence, and sequential experience collection exposes it. The net result is $\kappa_{\text{PG}}$ dropping under hidden information.
 
