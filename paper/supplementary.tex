@@ -334,17 +334,19 @@ The two mechanisms interact multiplicatively:
 
 \begin{table}[h]
 \centering
-\resizebox{\columnwidth}{!}{%
+\small
 \begin{tabular}{lcc}
 \toprule
 & Gradient Source & Experience Aggregation \\
 \midrule
-PG family  & Action-preference (amplifies conflict) & Sequential (exposes conflict) \\
-Value family & Value-prediction (suppresses conflict) & Replay-buffered (averages conflict) \\
+PG    & Action-preference & Sequential \\
+Value & Value-prediction & Replay-buffered \\
 \bottomrule
-\end{tabular}}
-\caption{Two mechanisms jointly determine $\kappa$ direction.}
+\end{tabular}
+\caption{Two mechanisms determine $\kappa$ direction.}
 \end{table}
+
+For PG, action-preference gradients amplify conflict and sequential collection exposes it; for value-based, prediction-error gradients suppress conflict and replay buffers average it.
 
 For policy-gradient methods, both mechanisms push in the same direction: the gradient source amplifies policy divergence, and sequential experience collection exposes it. The net result is $\kappa_{\text{PG}}$ dropping under hidden information.
 
