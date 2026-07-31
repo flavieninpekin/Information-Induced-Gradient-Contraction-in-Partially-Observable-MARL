@@ -276,6 +276,85 @@ environment and policy.
 Cross-algorithm $\kappa$ values must name the estimator; the directional reversal observed in our DQN and SAC experiments is not a proof that either algorithm family is immune to hidden information. Rather, it reveals that the TD-loss and soft-actor gradient fields respond to information structure differently than the REINFORCE gradient field.
 Because these families use fundamentally different objectives, their $\kappa$ values inhabit different metric spaces and cannot be directly compared in magnitude. The appropriate cross-algorithm analysis is directional: testing whether the same sign pattern ($\kappa_R > \kappa_H$ or $\kappa_R < \kappa_H$) holds within each family.
 
+\section{Algorithm Families: Information Processing and Behavioral Divergence}
+
+The empirical reversal between policy-gradient and value-based methods raises a structural question: \textit{why} do these families respond differently to hidden information?
+We identify two orthogonal mechanisms---gradient sourcing and experience aggregation---that jointly determine a family's $\kappa$ signature.
+
+\subsection{Mechanism 1: Gradient Sourcing}
+
+The source of the gradient fundamentally shapes what $\kappa$ measures.
+
+\medskip
+\noindent\textbf{Policy-gradient family (PPO, A2C, REINFORCE).}
+The gradient is sourced from the policy's own action distribution:
+\[
+\nabla_\theta \mathcal{L}_{\text{PG}} = \mathbb{E}\bigl[ \nabla_\theta \log \pi_\theta(a|o) \cdot A(o,a) \bigr],
+\]
+where $A(o,a)$ is an advantage estimate (return, GAE, or TD residual).
+This gradient \textit{directly encodes} which actions the policy should increase or decrease.
+When hidden configuration $A$ demands action 0 and configuration $B$ demands action 1, the gradients $\nabla \log \pi(a{=}0|o)$ and $\nabla \log \pi(a{=}1|o)$ point in opposite directions---they literally suggest mutually exclusive parameter updates.
+$\kappa$ detects this opposition directly: it measures the cosine similarity of action-preference vectors across configurations.
+
+\medskip
+\noindent\textbf{Value-based family (DQN).}
+The gradient is sourced from prediction error minimization:
+\[
+\nabla_\theta \mathcal{L}_{\text{TD}} = \mathbb{E}\bigl[ \nabla_\theta Q_\theta(o,a) \cdot (Q_\theta(o,a) - y) \bigr],
+\]
+where $y = r + \gamma \max_{a'} Q_{\theta^-}(o',a')$ is the TD target.
+This gradient updates the Q-function to reduce prediction error---it does not directly encode action preferences.
+Whether configurations $A$ and $B$ require different optimal actions is irrelevant to the TD gradient; what matters is whether the Q-function \textit{predicts similar values} for similar states across configurations.
+Since the transition dynamics of $A$ and $B$ produce similar state distributions in many environments, the Q-function's prediction task aligns gradients across configurations even when the optimal actions differ.
+
+\textbf{Consequence:} The PG gradient amplifies policy divergence; the TD gradient amplifies state-similarity. This is why $\kappa_{\text{PG}}$ drops when optimal actions diverge, while $\kappa_{\text{TD}}$ can remain high.
+
+\subsection{Mechanism 2: Experience Aggregation}
+
+The replay buffer in off-policy methods introduces a second-order effect.
+
+\medskip
+\noindent\textbf{On-policy (PPO, A2C, REINFORCE).}
+Gradients are computed from a buffer of recent, sequentially collected trajectories.
+If training alternates between configurations $A$ and $B$, successive gradient updates pull the policy in opposing directions.
+The net effect is destructive interference: the policy oscillates, and the effective learning signal shrinks.
+
+\medskip
+\noindent\textbf{Off-policy (DQN, SAC).}
+Gradients are computed from a uniformly sampled replay buffer containing up to 50,000 transitions.
+If configurations $A$ and $B$ appear with equal frequency, each mini-batch contains a balanced mixture.
+The average gradient over a batch is approximately $\frac{1}{2}(g_A + g_B)$, which is the \textit{same} regardless of whether $g_A$ and $g_B$ oppose each other.
+The replay buffer acts as an implicit averager: it pre-averages conflicting signals \textit{before} they reach the optimizer, whereas on-policy methods expose the conflict directly.
+
+\textbf{Consequence:} Larger buffers produce stronger averaging. This predicts that $\kappa_{\text{DQN}}$ should be \textit{higher} (less conflict) as buffer size increases---a prediction consistent with our Toy DQN result ($\kappa_R \!>\! \kappa_H$ with a small 2,000-transition buffer) vs.\ 510K DQN ($\kappa_R \!<\! \kappa_H$ with a 50,000-transition buffer).
+
+\subsection{Combined Effect}
+
+The two mechanisms interact multiplicatively:
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+& Gradient Source & Experience Aggregation \\
+\midrule
+PG family  & Action-preference (amplifies conflict) & Sequential (exposes conflict) \\
+Value family & Value-prediction (suppresses conflict) & Replay-buffered (averages conflict) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For policy-gradient methods, both mechanisms push in the same direction: the gradient source amplifies policy divergence, and sequential experience collection exposes it. The net result is $\kappa_{\text{PG}}$ dropping under hidden information.
+
+For value-based methods, the two mechanisms work at cross-purposes: the value-prediction gradient source partially suppresses conflict, while the replay buffer fully averages it. When the buffer is large enough to dominate (510K: 50K transitions), the averaging wins and $\kappa_{\text{TD}}$ actually \textit{increases} under hidden information. When the buffer is small (Toy: 2K transitions), the gradient source dominates and $\kappa_{\text{TD}}$ decreases---matching the PG pattern.
+
+\subsection{Practical Implications}
+
+\begin{enumerate}
+\item \textbf{Algorithm selection:} In environments where hidden information creates genuine action-preference divergence (Overcooked, Toy), policy-gradient methods provide the cleanest $\kappa$ signal and the most direct diagnostic. Value-based methods may obscure the conflict behind buffer averaging.
+\item \textbf{Buffer size as a hyperparameter for $\kappa$ sensitivity:} Reducing the replay buffer size increases $\kappa$ sensitivity to hidden information in value-based methods. Researchers using $\kappa$ diagnostically with off-policy algorithms should consider buffer size when interpreting $\kappa$ values.
+\item \textbf{SAC occupies an intermediate position:} SAC's actor gradient is structurally similar to PG (both operate in action-preference space), but its critic is trained with TD-loss from a replay buffer. The resulting $\kappa$ is a hybrid---neither fully PG-like nor fully TD-like---consistent with our observation that $\kappa_{\text{SAC}}$ shows a weaker reversal ($\Delta \kappa \approx 0.04$) than $\kappa_{\text{DQN}}$ ($\Delta \kappa \approx 0.12$, but reversed).
+\end{enumerate}
+
 \section{Experimental Design}
 
 \subsection{Seed Selection and Independence}
