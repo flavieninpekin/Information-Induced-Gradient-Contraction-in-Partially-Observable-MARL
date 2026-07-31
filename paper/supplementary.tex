@@ -481,9 +481,9 @@ We attribute this to replay buffer capacity: Toy DQN uses a buffer of 2,000 tran
 The larger buffer provides more effective mixing of configurations $A$ and $B$, forcing Q-function gradients into alignment.
 This supports the interpretation that the DQN reversal is an artifact of buffer scale, not an algorithmic invariant.
 
-\section{Split-Batch Reveal Audit}
+\subsection{Split-Batch Reveal Audit}
 
-\begin{table}
+\begin{table}[h]
 \centering
 \small
 \begin{tabular}{lcc}
@@ -500,9 +500,9 @@ Reveal Fraction & Split-batch $\kappa$ (mean $\pm$ std) & $n$ \\
 \caption{Continuous reveal $\kappa$ values (510K, PPO, 2 seeds $\times$ 2 rollouts per condition). The W-shape is robust at $n=2$ seeds per level.}
 \end{table}
 
-\section{Training Hyperparameters}
+\section{Training Hyperparameters and Infrastructure}
 
-\begin{table}
+\begin{table}[h]
 \centering
 \footnotesize
 \begin{tabular}{@{}lp{0.58\columnwidth}@{}}
@@ -528,16 +528,10 @@ REINFORCE lr      & $1 \times 10^{-3}$, batch 10 episodes, 20,000 episodes (self
 \caption{Training hyperparameters for all algorithms and environments.}
 \end{table}
 
-\section{Computing Infrastructure}
-
-\noindent\textbf{Hardware:} NVIDIA GeForce RTX 5070 Ti Laptop GPU (12 GB VRAM), Intel(R) UHD Graphics (auxiliary), and 32 GB RAM.
-\textbf{Software:} Windows 11; PyTorch 2.11; stable-baselines3 2.8; sb3-contrib 2.8; Gymnasium 0.29+; NumPy 2.3 (with compatibility patches for Overcooked AI legacy gym dependency).
-\textbf{Training time:} $\sim$20 minutes per 1M-step PPO seed (parallel); $\sim$2.5 hours per SAC seed (sequential); $\sim$3.5 minutes per 10K-step Toy seed.
+\noindent\textbf{Hardware:} NVIDIA GeForce RTX 5070 Ti Laptop GPU (12 GB VRAM), 32 GB RAM. \textbf{Software:} Windows 11; PyTorch 2.11; stable-baselines3 2.8; sb3-contrib 2.8; Gymnasium 0.29+; NumPy 2.3. \textbf{Training time:} $\sim$20\,min per PPO seed (8 parallel envs); $\sim$2.5\,h per SAC seed (sequential); $\sim$3.5\,min per Toy seed.
 
 \section{Code and Data Availability}
 
-All source code, experiment configurations, and pre-computed validation results are included in the supplementary material submitted with this paper.
-The codebase includes the 510K game environment with four configurable cooperation modes; the Overcooked role-based partner wrapper (chef, waiter agents); the Toy Matching environment for gradient contraction isolation; training scripts for all five algorithms (PPO, A2C, DQN, SAC, REINFORCE) across all three environments; $\kappa$ computation utilities and the continuous reveal pipeline; and the path integral analysis framework with seven behavioral features.
-All materials are provided under the MIT License and will be made publicly available upon publication.
+All source code, experiment configurations, and pre-computed validation results are included in the supplementary material. The codebase includes the 510K game environment with four configurable cooperation modes; the Overcooked role-based partner wrapper (chef, waiter agents); the Toy Matching environment; training scripts for all five algorithms (PPO, A2C, DQN, SAC, REINFORCE) across all three environments; $\kappa$ computation utilities and the continuous reveal pipeline; and the path integral analysis framework. All materials under MIT License; publicly available upon publication.
 
 \end{document}
